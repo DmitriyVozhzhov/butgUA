@@ -1,0 +1,2035 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>BudgUA — Family Budget</title>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0f14;
+  --surface:#13161e;
+  --surface2:#1a1e28;
+  --border:#232736;
+  --accent:#4ade80;
+  --accent2:#22d3ee;
+  --accent3:#f59e0b;
+  --danger:#f87171;
+  --text:#e8eaf0;
+  --text2:#8892a4;
+  --text3:#4a5568;
+  --radius:14px;
+  --shadow:0 4px 24px rgba(0,0,0,.4);
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Onest',sans-serif;font-size:15px;line-height:1.6}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+/* ── PAGE SYSTEM ── */
+.page{display:none;min-height:100vh}
+.page.active{display:flex}
+
+/* ════════════════════════════════
+   AUTH PAGE
+════════════════════════════════ */
+#page-auth{
+  align-items:center;justify-content:center;flex-direction:column;
+  background:var(--bg);
+  background-image:radial-gradient(ellipse 60% 50% at 50% -10%,rgba(74,222,128,.12),transparent),
+                   radial-gradient(ellipse 40% 40% at 80% 80%,rgba(34,211,238,.07),transparent);
+}
+.auth-logo{text-align:center;margin-bottom:40px}
+.auth-logo h1{font-family:'Playfair Display',serif;font-size:2.4rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.auth-logo p{color:var(--text2);font-size:.9rem;margin-top:4px}
+.auth-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:20px;
+  padding:40px;width:100%;max-width:420px;box-shadow:var(--shadow);
+}
+.auth-tabs{display:flex;gap:4px;background:var(--bg);border-radius:10px;padding:4px;margin-bottom:28px}
+.auth-tab{flex:1;padding:9px;text-align:center;border-radius:8px;cursor:pointer;font-size:.875rem;font-weight:500;color:var(--text2);transition:all .2s}
+.auth-tab.active{background:var(--surface2);color:var(--text)}
+.auth-form{display:none;flex-direction:column;gap:16px}
+.auth-form.active{display:flex}
+.field label{display:block;font-size:.8rem;font-weight:500;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em}
+.field input{
+  width:100%;background:var(--bg);border:1px solid var(--border);border-radius:10px;
+  padding:11px 14px;color:var(--text);font-family:inherit;font-size:.95rem;outline:none;transition:border-color .2s;
+}
+.field input:focus{border-color:var(--accent)}
+.btn{
+  padding:12px 20px;border-radius:10px;border:none;cursor:pointer;font-family:inherit;
+  font-size:.95rem;font-weight:600;transition:all .2s;
+}
+.btn-primary{background:var(--accent);color:#0d1a0f}
+.btn-primary:hover{background:#22c55e;transform:translateY(-1px)}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text2)}
+.btn-ghost:hover{border-color:var(--text2);color:var(--text)}
+.btn-danger{background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.3);color:var(--danger)}
+.btn-danger:hover{background:rgba(248,113,113,.2)}
+.err{color:var(--danger);font-size:.85rem;margin-top:-8px;display:none}
+
+/* ════════════════════════════════
+   APP LAYOUT
+════════════════════════════════ */
+#page-app{flex-direction:row}
+.sidebar{
+  width:240px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;padding:24px 16px;flex-shrink:0;
+}
+.sidebar-logo{font-family:'Playfair Display',serif;font-size:1.4rem;padding:0 8px;margin-bottom:32px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.nav-item{
+  display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;
+  color:var(--text2);font-weight:500;font-size:.9rem;transition:all .2s;margin-bottom:2px;
+}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:rgba(74,222,128,.1);color:var(--accent)}
+.nav-icon{font-size:1.1rem;width:20px;text-align:center}
+.sidebar-spacer{flex:1}
+.sidebar-user{padding:12px;background:var(--bg);border-radius:10px;border:1px solid var(--border)}
+.sidebar-user-name{font-weight:600;font-size:.875rem;color:var(--text)}
+.sidebar-user-email{font-size:.78rem;color:var(--text2);margin-top:1px}
+.btn-logout{margin-top:8px;width:100%;padding:7px;border-radius:8px;background:transparent;border:1px solid var(--border);color:var(--text3);font-family:inherit;font-size:.8rem;cursor:pointer;transition:all .2s}
+.lang-toggle{display:flex;gap:4px;margin-bottom:8px}
+.lang-btn{flex:1;padding:6px;border-radius:8px;background:transparent;border:1px solid var(--border);color:var(--text2);font-family:inherit;font-size:.78rem;cursor:pointer;transition:all .2s;font-weight:600}
+.lang-btn.active{background:rgba(74,222,128,.1);border-color:var(--accent);color:var(--accent)}
+.btn-logout:hover{border-color:var(--danger);color:var(--danger)}
+.main{flex:1;overflow-y:auto;padding:32px}
+.view{display:none}
+.view.active{display:block}
+.view-title{font-family:'Playfair Display',serif;font-size:1.8rem;margin-bottom:24px}
+
+/* ════════════════════════════════
+   CARDS & GRID
+════════════════════════════════ */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+@media(max-width:900px){.grid-4{grid-template-columns:1fr 1fr}.grid-3{grid-template-columns:1fr 1fr}.sidebar{display:none}}
+
+/* STAT CARDS */
+.stat-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:20px 22px;position:relative;overflow:hidden;
+}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.stat-card.green::before{background:linear-gradient(90deg,var(--accent),transparent)}
+.stat-card.blue::before{background:linear-gradient(90deg,var(--accent2),transparent)}
+.stat-card.amber::before{background:linear-gradient(90deg,var(--accent3),transparent)}
+.stat-card.red::before{background:linear-gradient(90deg,var(--danger),transparent)}
+.stat-label{font-size:.78rem;font-weight:500;text-transform:uppercase;letter-spacing:.07em;color:var(--text2);margin-bottom:8px}
+.stat-value{font-size:1.7rem;font-weight:700;font-variant-numeric:tabular-nums}
+.stat-value.green{color:var(--accent)}
+.stat-value.blue{color:var(--accent2)}
+.stat-value.amber{color:var(--accent3)}
+.stat-value.red{color:var(--danger)}
+.stat-sub{font-size:.8rem;color:var(--text2);margin-top:4px}
+
+/* PROGRESS BAR */
+.progress-wrap{margin:8px 0}
+.progress-label{display:flex;justify-content:space-between;font-size:.82rem;color:var(--text2);margin-bottom:5px}
+.progress-bar{height:6px;background:var(--bg);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;border-radius:3px;transition:width .5s ease}
+.progress-fill.green{background:linear-gradient(90deg,var(--accent),#86efac)}
+.progress-fill.amber{background:linear-gradient(90deg,var(--accent3),#fcd34d)}
+.progress-fill.red{background:linear-gradient(90deg,var(--danger),#fca5a5)}
+
+/* TABLE */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.875rem}
+th{padding:10px 14px;text-align:left;font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text2);border-bottom:1px solid var(--border);font-weight:600}
+td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--surface2)}
+.badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:.75rem;font-weight:600}
+.badge-green{background:rgba(74,222,128,.12);color:var(--accent)}
+.badge-blue{background:rgba(34,211,238,.12);color:var(--accent2)}
+.badge-amber{background:rgba(245,158,11,.12);color:var(--accent3)}
+.badge-red{background:rgba(248,113,113,.12);color:var(--danger)}
+.badge-gray{background:rgba(255,255,255,.06);color:var(--text2)}
+
+/* FORM ELEMENTS */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.form-row.single{grid-template-columns:1fr}
+.form-row.triple{grid-template-columns:1fr 1fr 1fr}
+.inp-wrap{display:flex;flex-direction:column;gap:6px}
+.inp-wrap label{font-size:.78rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.05em}
+.inp-wrap input,.inp-wrap select{
+  background:var(--bg);border:1px solid var(--border);border-radius:10px;
+  padding:10px 13px;color:var(--text);font-family:inherit;font-size:.9rem;outline:none;transition:border-color .2s;
+}
+.inp-wrap input:focus,.inp-wrap select:focus{border-color:var(--accent)}
+.inp-wrap select option{background:var(--surface)}
+.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.section-head h3{font-size:1rem;font-weight:600}
+.btn-sm{padding:6px 14px;font-size:.82rem;border-radius:8px}
+.dynamic-list{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
+.dynamic-item{
+  background:var(--bg);border:1px solid var(--border);border-radius:10px;
+  padding:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;
+}
+.dynamic-item .inp-wrap{flex:1;min-width:110px}
+.dynamic-item .del-btn{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.2);color:var(--danger);border-radius:8px;padding:9px 12px;cursor:pointer;font-size:1rem;flex-shrink:0;align-self:flex-end;transition:all .2s}
+.dynamic-item .del-btn:hover{background:rgba(248,113,113,.2)}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:100;display:none;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:32px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow)}
+.modal h2{font-size:1.2rem;font-weight:700;margin-bottom:20px}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+
+/* TOKEN BLOCK */
+.token-block{
+  background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px 16px;
+  display:flex;align-items:center;gap:10px;
+}
+.token-val{font-family:monospace;font-size:.9rem;color:var(--accent2);flex:1;word-break:break-all}
+.token-copy{background:transparent;border:none;cursor:pointer;color:var(--text2);font-size:1rem;padding:4px;transition:color .2s}
+.token-copy:hover{color:var(--accent)}
+
+/* TIMELINE */
+.timeline{display:flex;flex-direction:column;gap:12px}
+.timeline-item{display:flex;align-items:center;gap:14px}
+.timeline-dot{width:10px;height:10px;border-radius:50%;background:var(--accent);flex-shrink:0}
+.timeline-dot.future{background:var(--text3)}
+.timeline-line{flex:1;height:1px;background:var(--border)}
+.timeline-text{font-size:.85rem;color:var(--text2)}
+.timeline-text strong{color:var(--text)}
+
+/* TOAST */
+.toast{
+  position:fixed;bottom:24px;right:24px;background:var(--surface2);border:1px solid var(--border);
+  border-radius:12px;padding:12px 18px;font-size:.875rem;z-index:999;
+  transform:translateY(80px);opacity:0;transition:all .3s;pointer-events:none;
+}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{border-color:rgba(74,222,128,.3);color:var(--accent)}
+.toast.error{border-color:rgba(248,113,113,.3);color:var(--danger)}
+
+/* BUDGET LIST CARDS */
+.budget-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;margin-bottom:24px}
+.budget-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:20px;cursor:pointer;transition:all .2s;position:relative;
+}
+.budget-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 8px 24px rgba(74,222,128,.08)}
+.budget-card h3{font-weight:700;font-size:1rem;margin-bottom:4px}
+.budget-card .bc-meta{font-size:.8rem;color:var(--text2);margin-bottom:14px}
+.budget-card .bc-stats{display:flex;gap:16px}
+.budget-card .bc-stat{font-size:.82rem}
+.budget-card .bc-stat span{display:block;color:var(--text2);font-size:.72rem;margin-bottom:1px}
+.budget-card .bc-actions{position:absolute;top:14px;right:14px;display:flex;gap:6px;opacity:0;transition:opacity .2s}
+.budget-card:hover .bc-actions{opacity:1}
+.bc-btn{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:5px 9px;cursor:pointer;font-size:.75rem;color:var(--text2);transition:all .2s}
+.bc-btn:hover{color:var(--text);border-color:var(--text3)}
+.bc-btn.del:hover{color:var(--danger);border-color:var(--danger)}
+
+/* CHART CONTAINER */
+.chart-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px}
+.chart-box h3{font-size:1rem;font-weight:600;margin-bottom:20px;color:var(--text2)}
+canvas{max-height:260px}
+
+/* PAYOFF CARD */
+.payoff-card{background:linear-gradient(135deg,rgba(74,222,128,.08),rgba(34,211,238,.05));border:1px solid rgba(74,222,128,.2);border-radius:var(--radius);padding:24px;margin-top:20px}
+.payoff-card h3{font-size:1.1rem;font-weight:700;margin-bottom:4px;color:var(--accent)}
+.payoff-card p{color:var(--text2);font-size:.9rem}
+.payoff-months{font-size:2rem;font-weight:700;color:var(--text);margin:8px 0}
+
+/* EMPTY STATE */
+.empty{text-align:center;padding:60px 20px;color:var(--text2)}
+.empty-icon{font-size:3rem;margin-bottom:12px}
+.empty h3{font-size:1.1rem;color:var(--text);margin-bottom:6px}
+.empty p{font-size:.875rem}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════ AUTH PAGE ═══════════════════ -->
+<div id="page-auth" class="page active">
+  <div>
+    <div class="auth-logo">
+      <h1>BudgUA</h1>
+      <p id="auth-tagline">Сімейний фінансовий облік</p>
+      <div style="display:flex;gap:8px;justify-content:center;margin-top:10px">
+        <button class="lang-btn active" id="auth-lang-uk" onclick="setLang('uk')" style="padding:5px 14px;border-radius:20px">🇺🇦 UK</button>
+        <button class="lang-btn" id="auth-lang-en" onclick="setLang('en')" style="padding:5px 14px;border-radius:20px">🇬🇧 EN</button>
+      </div>
+    </div>
+    <div class="auth-card">
+      <div class="auth-tabs">
+        <div class="auth-tab active" onclick="switchTab('login')" data-i18n="login">Вхід</div>
+        <div class="auth-tab" onclick="switchTab('register')" data-i18n="register">Реєстрація</div>
+      </div>
+
+      <!-- LOGIN -->
+      <form class="auth-form active" id="form-login" onsubmit="doLogin(event)">
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="login-email" placeholder="name@email.com" required/>
+        </div>
+        <div class="field">
+          <label>Пароль</label>
+          <input type="password" id="login-pass" placeholder="••••••••" required/>
+        </div>
+        <div class="err" id="login-err"></div>
+        <button class="btn btn-primary" type="submit">Увійти</button>
+      </form>
+
+      <!-- REGISTER -->
+      <form class="auth-form" id="form-register" onsubmit="doRegister(event)">
+        <div class="field">
+          <label>Ім'я</label>
+          <input type="text" id="reg-name" placeholder="Іван Іванов" required/>
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="reg-email" placeholder="name@email.com" required/>
+        </div>
+        <div class="field">
+          <label>Пароль</label>
+          <input type="password" id="reg-pass" placeholder="мін. 6 символів" minlength="6" required/>
+        </div>
+        <div class="err" id="reg-err"></div>
+        <button class="btn btn-primary" type="submit">Зареєструватись</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ APP PAGE ═══════════════════ -->
+<div id="page-app" class="page">
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">BudgUA</div>
+    <div class="nav-item active" onclick="showView('dashboard')">
+      <span class="nav-icon">📊</span><span data-i18n="dashboard">Дашборд</span>
+    </div>
+    <div class="nav-item" onclick="showView('budgets')">
+      <span class="nav-icon">📋</span><span data-i18n="budgets">Бюджети</span>
+    </div>
+    <div class="nav-item" onclick="showView('transactions')">
+      <span class="nav-icon">💳</span><span data-i18n="transactions">Транзакції</span>
+    </div>
+    <div class="nav-item" onclick="showView('yearly')">
+      <span class="nav-icon">📅</span><span data-i18n="yearlyStats">Рік</span>
+    </div>
+    <div class="nav-item" onclick="showView('profile')">
+      <span class="nav-icon">🔑</span><span data-i18n="profile">Кабінет</span>
+    </div>
+    <div class="sidebar-spacer"></div>
+    <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;margin-bottom:8px">
+      <div id="live-dot" style="width:8px;height:8px;border-radius:50%;background:var(--text3);box-shadow:none;transition:all .4s;flex-shrink:0"></div>
+      <div>
+        <div id="live-label" style="font-size:.78rem;color:var(--text2);line-height:1.2">Offline</div>
+        <div id="live-sublabel" style="font-size:.7rem;color:var(--text3);line-height:1.2">Telegram бот</div>
+      </div>
+    </div>
+    <div class="sidebar-user">
+      <div class="lang-toggle">
+        <button class="lang-btn active" id="lang-btn-uk" onclick="setLang('uk')">🇺🇦 UK</button>
+        <button class="lang-btn" id="lang-btn-en" onclick="setLang('en')">🇬🇧 EN</button>
+      </div>
+      <div class="sidebar-user-name" id="sb-name">—</div>
+      <div class="sidebar-user-email" id="sb-email">—</div>
+      <button class="btn-logout" id="btn-logout" onclick="logout()">Вийти</button>
+    </div>
+    <div style="padding:8px 4px;display:flex;gap:8px;flex-wrap:wrap">
+      <a href="/terms.html" target="_blank" style="font-size:.7rem;color:var(--text3);text-decoration:none;" data-i18n="terms">Умови</a>
+      <a href="/privacy.html" target="_blank" style="font-size:.7rem;color:var(--text3);text-decoration:none;" data-i18n="privacy">Конфіденційність</a>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- ── DASHBOARD ── -->
+    <div class="view active" id="view-dashboard">
+      <div class="view-title">Дашборд</div>
+      <div id="dash-content">
+        <div class="empty">
+          <div class="empty-icon">📊</div>
+          <h3>Оберіть або створіть бюджет</h3>
+          <p>Перейдіть до розділу «Бюджети» щоб розпочати</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── BUDGETS ── -->
+    <div class="view" id="view-budgets">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+        <div class="view-title" style="margin:0">Бюджети</div>
+        <button class="btn btn-primary" onclick="openBudgetModal()">+ Новий бюджет</button>
+      </div>
+      <div class="budget-cards" id="budget-cards-list"></div>
+    </div>
+
+    <!-- ── TRANSACTIONS ── -->
+    <div class="view" id="view-transactions">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+        <div class="view-title" style="margin:0">Транзакції</div>
+        <button class="btn btn-primary" onclick="openTxModal()">+ Додати</button>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Дата</th><th>Категорія</th><th>Опис</th><th>Сума</th><th>Джерело</th><th></th></tr></thead>
+            <tbody id="tx-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PROFILE ── -->
+    <!-- ── YEARLY STATS VIEW ── -->
+    <div class="view" id="view-yearly">
+      <div class="view-title" id="yearly-title">Статистика за рік</div>
+      <div id="yearly-content">
+        <div class="empty"><div class="empty-icon">📅</div><h3 data-i18n="noYearlyData">Немає даних</h3><p data-i18n="addBudgetsFirst">Додайте бюджети та транзакції</p></div>
+      </div>
+    </div>
+
+    <div class="view" id="view-profile">
+      <div class="view-title" data-i18n="profileTitle">Кабінет</div>
+      <div class="grid-2" style="gap:20px">
+        <div class="card">
+          <h3 style="font-size:1rem;font-weight:700;margin-bottom:20px" data-i18n="profile">Профіль</h3>
+          <div class="form-row single">
+            <div class="inp-wrap">
+              <label data-i18n="nameLabel">Ім'я</label>
+              <input type="text" id="prof-name" readonly style="opacity:.6"/>
+            </div>
+          </div>
+          <div class="form-row single">
+            <div class="inp-wrap">
+              <label data-i18n="emailLabel">Email</label>
+              <input type="email" id="prof-email" readonly style="opacity:.6"/>
+            </div>
+          </div>
+          <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--border)">
+            <h4 style="font-size:.875rem;font-weight:700;color:var(--danger);margin-bottom:8px" data-i18n="dangerZone">⚠️ Небезпечна зона</h4>
+            <p style="font-size:.8rem;color:var(--text2);margin-bottom:12px" data-i18n="deleteAccountDesc">Видалення акаунту є незворотнім. Всі ваші бюджети, транзакції та дані будуть повністю видалені.</p>
+            <button class="btn btn-danger btn-sm" onclick="confirmDeleteAccount()" data-i18n="deleteAccount">🗑 Видалити акаунт та всі дані</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 style="font-size:1rem;font-weight:700;margin-bottom:8px" data-i18n="apiTokenTitle">API Токен для Telegram бота</h3>
+          <p id="profile-token-desc" style="font-size:.85rem;color:var(--text2);margin-bottom:16px">
+            <span data-i18n="apiTokenDesc">Скопіюйте токен, відкрийте Telegram бот та надішліть:</span><br>
+            <code style="color:var(--accent2)">/start ВАШ_ТОКЕН</code>
+          </p>
+          <div class="token-block">
+            <span class="token-val" id="api-token">—</span>
+            <button class="token-copy" onclick="copyToken()" title="Копіювати">📋</button>
+          </div>
+          <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-ghost btn-sm" onclick="regenerateToken()" data-i18n="refreshToken">🔄 Оновити токен</button>
+          </div>
+          <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border)">
+            <h4 style="font-size:.85rem;font-weight:600;color:var(--text2);margin-bottom:8px" data-i18n="howToConnect">Як підключити Telegram бота:</h4>
+            <ol style="font-size:.83rem;color:var(--text2);padding-left:18px;line-height:2">
+              <li data-i18n="step1">Знайдіть бота @BudgUA_bot в Telegram</li>
+              <li data-i18n="step2">Скопіюйте токен вище</li>
+              <li>Надішліть <code style="color:var(--accent)">/start ТОКЕН</code></li>
+              <li data-i18n="step4">Тепер надсилайте фото чеків — бот їх розпізнає!</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ═══════════ BUDGET MODAL ═══════════ -->
+<div class="modal-overlay" id="modal-budget">
+  <div class="modal" style="max-width:680px">
+    <h2 id="budget-modal-title">Новий бюджет</h2>
+
+    <div class="form-row">
+      <div class="inp-wrap">
+        <label data-i18n="budgetName">Назва бюджету</label>
+        <input type="text" id="b-title" placeholder="Наприклад: Червень 2025"/>
+      </div>
+      <div class="inp-wrap">
+        <label data-i18n="month">Місяць</label>
+        <input type="month" id="b-month"/>
+      </div>
+    </div>
+    <div class="form-row single">
+      <div class="inp-wrap">
+        <label data-i18n="income">Загальний дохід (грн)</label>
+        <input type="number" id="b-income" placeholder="0" min="0"/>
+      </div>
+    </div>
+
+    <!-- CREDITS -->
+    <div class="section-head" style="margin-top:20px">
+      <h3 data-i18n="credits">🏦 Кредити</h3>
+      <button class="btn btn-ghost btn-sm" onclick="addItem('credits')" data-i18n-btn="addItem">+ Додати</button>
+    </div>
+    <div class="dynamic-list" id="list-credits"></div>
+
+    <!-- INSTALLMENTS -->
+    <div class="section-head">
+      <h3 data-i18n="installments">🛒 Розстрочки</h3>
+      <button class="btn btn-ghost btn-sm" onclick="addItem('installments')" data-i18n-btn="addItem">+ Додати</button>
+    </div>
+    <div class="dynamic-list" id="list-installments"></div>
+
+    <!-- CATEGORIES -->
+    <div class="section-head">
+      <h3 data-i18n="categories">📂 Очікувані витрати по категоріям</h3>
+      <button class="btn btn-ghost btn-sm" onclick="addItem('categories')" data-i18n-btn="addItem">+ Додати</button>
+    </div>
+    <div class="dynamic-list" id="list-categories"></div>
+
+    <!-- CREDIT CARDS (multiple) -->
+    <div class="section-head" style="margin-top:8px">
+      <h3 data-i18n="creditCards">💳 Кредитні картки</h3>
+      <button class="btn btn-ghost btn-sm" onclick="addItem('creditCards')" data-i18n-btn="addCard">+ Додати картку</button>
+    </div>
+    <div class="dynamic-list" id="list-creditCards"></div>
+
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeBudgetModal()">Скасувати</button>
+      <button class="btn btn-primary" onclick="saveBudget()">Зберегти бюджет</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ TX MODAL ═══════════ -->
+<div class="modal-overlay" id="modal-tx">
+  <div class="modal">
+    <h2 data-i18n="newTx">Нова транзакція</h2>
+    <div class="form-row single" id="tx-budget-row">
+      <div class="inp-wrap">
+        <label data-i18n="budgets">Бюджет</label>
+        <select id="tx-budget-select"></select>
+      </div>
+    </div>
+    <div class="form-row single">
+      <div class="inp-wrap">
+        <label data-i18n="amount">Сума (грн)</label>
+        <input type="number" id="tx-amount" placeholder="0" min="0" required/>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="inp-wrap">
+        <label data-i18n="category">Категорія</label>
+        <select id="tx-cat">
+          <option>Продукти</option><option>Кафе/Ресторан</option><option>Транспорт</option>
+          <option>Комунальні</option><option>Одяг</option><option>Ліки/Аптека</option>
+          <option>Розваги</option><option>Техніка</option><option>Інше</option>
+        </select>
+      </div>
+      <div class="inp-wrap">
+        <label data-i18n="dateTime">Дата та час</label>
+        <input type="datetime-local" id="tx-date"/>
+      </div>
+    </div>
+    <div class="form-row single">
+      <div class="inp-wrap">
+        <label data-i18n="description">Опис</label>
+        <input type="text" id="tx-desc" placeholder="Наприклад: АТБ, продукти"/>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeTxModal()" data-i18n="cancel">Скасувати</button>
+      <button class="btn btn-primary" onclick="saveTx()" data-i18n="save">Зберегти</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════
+//  I18N
+// ═══════════════════════════════════════════════
+const LANGS = {
+  uk: {
+    // nav
+    dashboard:'Дашборд', budgets:'Бюджети', transactions:'Транзакції', profile:'Кабінет',
+    logout:'Вийти', tagline:'Сімейний фінансовий облік',
+    // auth
+    login:'Вхід', register:'Реєстрація',
+    nameLabel:"Ім'я", emailLabel:'Email', passwordLabel:'Пароль',
+    loginBtn:'Увійти', registerBtn:'Зареєструватись',
+    // budget modal
+    budgetName:'Назва бюджету', month:'Місяць', income:'Загальний дохід (грн)',
+    credits:'🏦 Кредити', installments:'🛒 Розстрочки', categories:'📂 Очікувані витрати по категоріям',
+    creditCards:'💳 Кредитні картки',
+    addItem:'+ Додати', addCard:'+ Додати картку',
+    cancel:'Скасувати', saveBudget:'Зберегти бюджет',
+    // fields
+    name:'Назва', fullAmount:'Повна сума', remaining:'Залишок (грн)', monthly:'Платіж/міс', monthsLeft:'Місяців',
+    fullAmountHint:'Початкова сума кредиту/розстрочки для відображення прогресу',
+    cardName:'Назва картки', debt:'Борг (грн)', annualRate:'Річна ставка (%)', myPayment:'Мій платіж/міс',
+    categoryName:'Категорія', plannedAmount:'Сума (грн)',
+    // dashboard
+    income2:'Дохід', realBalance:'Реальний залишок', spentActual:'Витрачено (факт)', debtPayoff:'Борг / До погашення',
+    catVsPlan:'Категорії: факт vs план', spendingChart:'Розподіл витрат', recentTx:'Останні витрати', allTx:'Всі →',
+    noTxHint:'Надішліть фото чеку через Telegram 📱',
+    // debts table
+    debtsAndCredits:'Борги та кредити', type:'Тип', debtLeft:'Залишок боргу', payment:'Платіж/міс', tillPayoff:'До погашення',
+    creditType:'Кредит', installmentType:'Розстрочка',
+    paid:'сплачено', remaining2:'залишилось', of:'з', mo:'міс.',
+    // payoff
+    payoffTitle:'📅 Прогноз повного погашення', months:'місяців', noDebts:'Немає боргів 🎉',
+    // transactions page
+    addTx:'+ Додати', date:'Дата', category:'Категорія', description:'Опис', amount:'Сума', source:'Джерело',
+    // profile
+    profileTitle:'Кабінет', apiTokenTitle:'API Токен для Telegram бота',
+    apiTokenDesc:'Скопіюйте токен, відкрийте Telegram бот та надішліть:',
+    copyToken:'Копіювати', refreshToken:'🔄 Оновити токен',
+    howToConnect:'Як підключити Telegram бота:',
+    step1:'Знайдіть бота @BudgUA_bot в Telegram',
+    step2:'Скопіюйте токен вище',
+    step3:'Надішліть /start ТОКЕН',
+    step4:'Тепер надсилайте фото чеків — бот їх розпізнає!',
+    // budget cards
+    noDebts2:'Немає бюджетів', createFirst:'Створіть перший бюджет',
+    // misc
+    terms:'Умови використання', privacy:'Конфіденційність',
+    telegramSource:'Telegram', manualSource:'Вручну',
+    inPlus:'✅ В плюсі', overspend:'⚠️ Перевитрата',
+    noPayoff:'Немає боргів 🎉',
+    // new
+    yearlyStats:'Рік', yearlyTitle:'Статистика за рік',
+    noYearlyData:'Немає даних', addBudgetsFirst:'Додайте бюджети та транзакції',
+    dangerZone:'⚠️ Небезпечна зона',
+    deleteAccountDesc:'Видалення акаунту є незворотнім. Всі ваші бюджети, транзакції та дані будуть повністю видалені.',
+    deleteAccount:'🗑 Видалити акаунт та всі дані',
+    confirmDelete:'Ви впевнені? Введіть DELETE для підтвердження:',
+    newTx:'Нова транзакція', dateTime:'Дата та час',
+    description:'Опис', save:'Зберегти',
+    yearlyIncome:'Доходи', yearlyExpenses:'Витрати',
+    yearlyBalance:'Баланс', yearlyTotal:'Всього за рік:',
+    monthNames:['Січ','Лют','Бер','Кві','Тра','Чер','Лип','Сер','Вер','Жов','Лис','Гру'],
+    surplus:'Профіцит', deficit:'Дефіцит',
+  },
+  en: {
+    dashboard:'Dashboard', budgets:'Budgets', transactions:'Transactions', profile:'Profile',
+    logout:'Log out', tagline:'Family Finance Tracker',
+    login:'Sign in', register:'Sign up',
+    nameLabel:'Name', emailLabel:'Email', passwordLabel:'Password',
+    loginBtn:'Sign in', registerBtn:'Create account',
+    budgetName:'Budget name', month:'Month', income:'Total income (UAH)',
+    credits:'🏦 Loans', installments:'🛒 Installments', categories:'📂 Expected expenses by category',
+    creditCards:'💳 Credit cards',
+    addItem:'+ Add', addCard:'+ Add card',
+    cancel:'Cancel', saveBudget:'Save budget',
+    name:'Name', fullAmount:'Full amount', remaining:'Remaining (UAH)', monthly:'Monthly payment', monthsLeft:'Months left',
+    fullAmountHint:'Original loan/installment amount for progress display',
+    cardName:'Card name', debt:'Debt (UAH)', annualRate:'Annual rate (%)', myPayment:'My payment/mo',
+    categoryName:'Category', plannedAmount:'Amount (UAH)',
+    income2:'Income', realBalance:'Real balance', spentActual:'Spent (actual)', debtPayoff:'Debt / Payoff',
+    catVsPlan:'Categories: actual vs plan', spendingChart:'Spending chart', recentTx:'Recent transactions', allTx:'All →',
+    noTxHint:'Send receipt photos via Telegram 📱',
+    debtsAndCredits:'Debts & Credits', type:'Type', debtLeft:'Debt remaining', payment:'Monthly', tillPayoff:'Payoff',
+    creditType:'Loan', installmentType:'Installment',
+    paid:'paid', remaining2:'remaining', of:'of', mo:'mo.',
+    payoffTitle:'📅 Full debt payoff forecast', months:'months', noDebts:'No debts 🎉',
+    addTx:'+ Add', date:'Date', category:'Category', description:'Description', amount:'Amount', source:'Source',
+    profileTitle:'Profile', apiTokenTitle:'API Token for Telegram bot',
+    apiTokenDesc:'Copy the token, open the Telegram bot and send:',
+    copyToken:'Copy', refreshToken:'🔄 Refresh token',
+    howToConnect:'How to connect the Telegram bot:',
+    step1:'Find @BudgUA_bot in Telegram',
+    step2:'Copy your token above',
+    step3:'Send /start TOKEN',
+    step4:'Now send receipt photos — the bot will scan them!',
+    noDebts2:'No budgets yet', createFirst:'Create your first budget',
+    terms:'Terms of Use', privacy:'Privacy Policy',
+    telegramSource:'Telegram', manualSource:'Manual',
+    inPlus:'✅ Positive', overspend:'⚠️ Overspent',
+    noPayoff:'No debts 🎉',
+    // new
+    yearlyStats:'Year', yearlyTitle:'Yearly Statistics',
+    noYearlyData:'No data', addBudgetsFirst:'Add budgets and transactions',
+    dangerZone:'⚠️ Danger Zone',
+    deleteAccountDesc:'Account deletion is irreversible. All your budgets, transactions and data will be permanently deleted.',
+    deleteAccount:'🗑 Delete account and all data',
+    confirmDelete:'Are you sure? Type DELETE to confirm:',
+    newTx:'New transaction', dateTime:'Date & time',
+    description:'Description', save:'Save',
+    yearlyIncome:'Income', yearlyExpenses:'Expenses',
+    yearlyBalance:'Balance', yearlyTotal:'Total for year:',
+    monthNames:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+    surplus:'Surplus', deficit:'Deficit',
+  }
+};
+
+let currentLang = localStorage.getItem('budgua_lang') || 'uk';
+
+function i18n(key) {
+  return LANGS[currentLang][key] || LANGS['uk'][key] || key;
+}
+
+function applyI18n() {
+  // data-i18n elements
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if(LANGS[currentLang][key]) el.textContent = LANGS[currentLang][key];
+  });
+  // lang buttons
+  ['uk','en'].forEach(l => {
+    const btn1 = document.getElementById('lang-btn-' + l);
+    const btn2 = document.getElementById('auth-lang-' + l);
+    if(btn1) btn1.classList.toggle('active', l === currentLang);
+    if(btn2) btn2.classList.toggle('active', l === currentLang);
+  });
+  // tagline
+  const tgl = document.getElementById('auth-tagline');
+  if(tgl) tgl.textContent = i18n('tagline');
+  // logout
+  const lo = document.getElementById('btn-logout');
+  if(lo) lo.textContent = i18n('logout');
+  // html lang
+  document.documentElement.lang = currentLang;
+}
+
+function setLang(lang) {
+  currentLang = lang;
+  localStorage.setItem('budgua_lang', lang);
+  applyI18n();
+  // Re-render active view
+  if(activeBudgetId) {
+    const b = budgets.find(x => x._id === activeBudgetId);
+    if(b) renderDashboard(b);
+  }
+  renderBudgetCards();
+  renderTxTable();
+}
+
+// ═══════════════════════════════════════════════
+//  CONFIG
+// ═══════════════════════════════════════════════
+const API = '/api';
+let token = localStorage.getItem('jwt') || '';
+let currentUser = null;
+let budgets = [];
+let transactions = [];
+let activeBudgetId = null;
+let editingBudgetId = null;
+
+// dynamic lists state
+const lists = { credits:[], installments:[], categories:[], creditCards:[] };
+
+// ═══════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════
+async function req(method, path, body) {
+  const opts = {
+    method,
+    headers: { 'Content-Type':'application/json', ...(token ? {'Authorization':'Bearer '+token} : {}) }
+  };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(API + path, opts);
+  const data = await r.json();
+  if (!r.ok) throw new Error(data.error || 'Помилка запиту');
+  return data;
+}
+
+function toast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => t.className = 'toast', 3000);
+}
+
+function fmt(n) {
+  return Number(n||0).toLocaleString('uk-UA', {minimumFractionDigits:0, maximumFractionDigits:0}) + ' ₴';
+}
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+}
+
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if(n.getAttribute('onclick')?.includes(id)) n.classList.add('active');
+  });
+  if(id === 'transactions') loadTransactions();
+  if(id === 'budgets') loadBudgets();
+  if(id === 'yearly') renderYearlyStats();
+}
+
+// ═══════════════════════════════════════════════
+//  AUTH
+// ═══════════════════════════════════════════════
+function switchTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach((t,i) => t.classList.toggle('active', (i===0&&tab==='login')||(i===1&&tab==='register')));
+  document.getElementById('form-login').classList.toggle('active', tab==='login');
+  document.getElementById('form-register').classList.toggle('active', tab==='register');
+}
+
+async function doLogin(e) {
+  e.preventDefault();
+  const err = document.getElementById('login-err');
+  err.style.display = 'none';
+  try {
+    const data = await req('POST', '/auth/login', {
+      email: document.getElementById('login-email').value,
+      password: document.getElementById('login-pass').value,
+    });
+    token = data.token;
+    localStorage.setItem('jwt', token);
+    currentUser = data.user;
+    enterApp();
+  } catch(ex) {
+    err.textContent = ex.message;
+    err.style.display = 'block';
+  }
+}
+
+async function doRegister(e) {
+  e.preventDefault();
+  const err = document.getElementById('reg-err');
+  err.style.display = 'none';
+  try {
+    const data = await req('POST', '/auth/register', {
+      name: document.getElementById('reg-name').value,
+      email: document.getElementById('reg-email').value,
+      password: document.getElementById('reg-pass').value,
+    });
+    token = data.token;
+    localStorage.setItem('jwt', token);
+    currentUser = data.user;
+    enterApp();
+  } catch(ex) {
+    err.textContent = ex.message;
+    err.style.display = 'block';
+  }
+}
+
+function logout() {
+  token = '';
+  currentUser = null;
+  localStorage.removeItem('jwt');
+  showPage('auth');
+}
+
+async function enterApp() {
+  showPage('app');
+  try {
+    currentUser = await req('GET', '/auth/me');
+  } catch {}
+  applyI18n();
+  document.getElementById('sb-name').textContent = currentUser?.name || '—';
+  document.getElementById('sb-email').textContent = currentUser?.email || '—';
+  document.getElementById('prof-name').value = currentUser?.name || '';
+  document.getElementById('prof-email').value = currentUser?.email || '';
+  document.getElementById('api-token').textContent = currentUser?.apiToken || '—';
+  showView('dashboard');
+  connectWS();
+  await loadBudgets();
+}
+
+// ═══════════════════════════════════════════════
+//  BUDGETS
+// ═══════════════════════════════════════════════
+async function loadBudgets() {
+  try {
+    budgets = await req('GET', '/budget');
+    renderBudgetCards();
+    if(budgets.length > 0) {
+      if(!activeBudgetId) activeBudgetId = budgets[0]._id;
+      const activeBudget = budgets.find(b => b._id === activeBudgetId) || budgets[0];
+      activeBudgetId = activeBudget._id;
+      await loadTransactionsForBudget(activeBudget._id);
+      renderDashboard(activeBudget);
+    }
+  } catch(ex) { toast(ex.message, 'error'); }
+}
+
+function renderBudgetCards() {
+  const el = document.getElementById('budget-cards-list');
+  if(!budgets.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><h3>Немає бюджетів</h3><p>Створіть перший бюджет</p></div>';
+    return;
+  }
+  el.innerHTML = budgets.map(b => {
+    const calc = calcBudget(b);
+    return `
+    <div class="budget-card" onclick="selectBudget('${b._id}')">
+      <div class="bc-actions">
+        <button class="bc-btn" onclick="event.stopPropagation();openBudgetModal('${b._id}')">✏️</button>
+        <button class="bc-btn del" onclick="event.stopPropagation();deleteBudget('${b._id}')">🗑</button>
+      </div>
+      <h3>${b.title}</h3>
+      <div class="bc-meta">${b.month || ''}</div>
+      <div class="bc-stats">
+        <div class="bc-stat"><span>Дохід</span>${fmt(b.income)}</div>
+        <div class="bc-stat"><span>Витрати</span>${fmt(calc.totalExpenses)}</div>
+        <div class="bc-stat" style="color:${calc.balance>=0?'var(--accent)':'var(--danger)'}"><span>Залишок</span>${fmt(calc.balance)}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function selectBudget(id) {
+  activeBudgetId = id;
+  const b = budgets.find(x => x._id === id);
+  if(b) {
+    await loadTransactionsForBudget(id);
+    renderDashboard(b);
+  }
+  showView('dashboard');
+}
+
+// ─── CALCULATIONS ───────────────────────────────
+// ── PrivatBank CC formula ──────────────────────────────
+// monthlyRate = annualRate / 12
+// ccInterest = debt * monthlyRate
+// ccMinPayment = max(debt * 5%, 100)  (interest is INSIDE minPayment, not on top)
+// bodyPayment = ccMinPayment - ccInterest
+// nextMonthDebt = debt - bodyPayment
+// payoffMonths for CC = simulate month by month
+function calcCCDetails(debt, annualRatePct, userPayment) {
+  const d = Number(debt) || 0;
+  const rate = (Number(annualRatePct) || 0) / 100 / 12; // monthly rate
+  if(d <= 0) return { interest:0, minPayment:0, bodyPayment:0, nextDebt:0, effectivePayment:0, ccPayoffMonths:0 };
+
+  const interest = d * rate;
+  const minPayment = Math.max(d * 0.05, 100);
+  const effectivePayment = userPayment > 0 ? Math.max(userPayment, minPayment) : minPayment;
+  const bodyPayment = effectivePayment - interest;
+  const nextDebt = Math.max(0, d - bodyPayment);
+
+  // Simulate month-by-month payoff
+  let remaining = d;
+  let months = 0;
+  const maxIter = 600;
+  while(remaining > 0.01 && months < maxIter) {
+    const mo_interest = remaining * rate;
+    const mo_min = Math.max(remaining * 0.05, 100);
+    const mo_payment = userPayment > 0 ? Math.max(userPayment, mo_min) : mo_min;
+    const mo_body = mo_payment - mo_interest;
+    if(mo_body <= 0) { months = 999; break; } // can never pay off
+    remaining -= mo_body;
+    months++;
+  }
+
+  return { interest, minPayment, bodyPayment, nextDebt, effectivePayment, ccPayoffMonths: months };
+}
+
+function calcBudget(b) {
+  const creditMonthly = (b.credits||[]).reduce((s,c) => s + (Number(c.monthlyPayment)||0), 0);
+  const installMonthly = (b.installments||[]).reduce((s,i) => s + (Number(i.monthlyPayment)||0), 0);
+  const catTotal = (b.categories||[]).reduce((s,c) => s + (Number(c.planned)||0), 0);
+
+  // Multiple credit cards
+  const cards = (b.creditCards||[]).map(card => calcCCDetails(card.debt, card.rate, card.payment));
+  const ccTotalMonthly = cards.reduce((s,c) => s + c.effectivePayment, 0);
+  const ccTotalDebt = (b.creditCards||[]).reduce((s,c) => s + (Number(c.debt)||0), 0);
+  const ccMaxPayoffMonths = cards.reduce((max,c) => Math.max(max, c.ccPayoffMonths), 0);
+
+  const totalExpenses = creditMonthly + installMonthly + catTotal + ccTotalMonthly;
+  const balance = (Number(b.income)||0) - totalExpenses;
+
+  const creditsDebt = (b.credits||[]).reduce((s,c) => s + (Number(c.totalAmount)||0), 0);
+  const installDebt = (b.installments||[]).reduce((s,i) => s + (Number(i.totalAmount)||0), 0);
+  const totalDebt = creditsDebt + installDebt + ccTotalDebt;
+
+  const maxCreditMonths = Math.max(
+    ...(b.credits||[]).map(c => Number(c.monthsLeft)||0),
+    ...(b.installments||[]).map(i => Number(i.monthsLeft)||0),
+    0
+  );
+  const payoffMonths = Math.max(maxCreditMonths, ccMaxPayoffMonths);
+
+  return {
+    creditMonthly, installMonthly, catTotal,
+    ccTotalMonthly, ccTotalDebt,
+    ccMaxPayoffMonths, cards,
+    totalExpenses, balance,
+    creditsDebt, installDebt, totalDebt,
+    maxCreditMonths, payoffMonths
+  };
+}
+
+// ─── DASHBOARD RENDER ───────────────────────────
+function calcActualByCategory(txList) {
+  const map = {};
+  (txList||[]).forEach(tx => {
+    const cat = tx.category || 'Інше';
+    map[cat] = (map[cat]||0) + Number(tx.amount||0);
+  });
+  return map;
+}
+
+function renderDashboard(b) {
+  const c = calcBudget(b);
+  const el = document.getElementById('dash-content');
+  const txList = budgetTransactions; // loaded separately
+  const totalActual = txList.reduce((s,t) => s + Number(t.amount||0), 0);
+  const actualByCategory = calcActualByCategory(txList);
+  const realBalance = Number(b.income||0) - c.creditMonthly - c.installMonthly - c.ccTotalMonthly - totalActual;
+
+  // category chart data — merge planned + actual
+  const catNames = new Set([
+    ...(b.categories||[]).map(c=>c.name),
+    ...Object.keys(actualByCategory)
+  ]);
+  const cats = [...catNames].filter(Boolean);
+  const chartColors = ['#4ade80','#22d3ee','#f59e0b','#f87171','#a78bfa','#fb923c','#34d399','#60a5fa'];
+  const recentTx = txList.slice(0, 5);
+
+  el.innerHTML = `
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+    <div>
+      <div style="font-family:'Playfair Display',serif;font-size:1.4rem">${b.title}</div>
+      <div style="font-size:.85rem;color:var(--text2)">${b.month||''} · ${txList.length} транзакцій</div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost btn-sm" onclick="generatePDF('${b._id}')">📄 Звіт PDF</button>
+      <button class="btn btn-ghost btn-sm" onclick="openBudgetModal('${b._id}')">✏️ Редагувати</button>
+    </div>
+  </div>
+
+  <!-- STAT CARDS -->
+  <div class="grid-4" style="margin-bottom:20px">
+    <div class="stat-card green">
+      <div class="stat-label">Дохід</div>
+      <div class="stat-value green">${fmt(b.income)}</div>
+    </div>
+    <div class="stat-card ${realBalance>=0?'blue':'red'}">
+      <div class="stat-label">Реальний залишок</div>
+      <div class="stat-value ${realBalance>=0?'blue':'red'}">${fmt(realBalance)}</div>
+      <div class="stat-sub">${realBalance>=0?'✅ В плюсі':'⚠️ Перевитрата'}</div>
+    </div>
+    <div class="stat-card red">
+      <div class="stat-label">Витрачено (факт)</div>
+      <div class="stat-value red">${fmt(totalActual)}</div>
+      <div class="stat-sub">з ${fmt(c.catTotal)} запланованих</div>
+    </div>
+    <div class="stat-card amber">
+      <div class="stat-label">Борг / До погашення</div>
+      <div class="stat-value amber">${fmt(c.totalDebt)}</div>
+      <div class="stat-sub">${c.payoffMonths > 0 ? '≈' + c.payoffMonths + ' міс.' : 'Немає боргів 🎉'}</div>
+    </div>
+  </div>
+
+  <!-- MAIN ROW -->
+  <div class="grid-2" style="margin-bottom:20px">
+    <!-- CATEGORY ACTUAL vs PLANNED -->
+    <div class="card">
+      <h3 style="font-size:1rem;font-weight:600;margin-bottom:18px;color:var(--text2)">Категорії: факт vs план</h3>
+      ${cats.length ? cats.map(name => {
+        const planned = (b.categories||[]).find(c=>c.name===name)?.planned || 0;
+        const actual = actualByCategory[name] || 0;
+        const maxVal = Math.max(planned, actual, 1);
+        const pct = Math.min(100, (actual/maxVal)*100);
+        const over = actual > planned && planned > 0;
+        return `<div class="progress-wrap">
+          <div class="progress-label">
+            <span>${name}</span>
+            <span style="color:${over?'var(--danger)':'var(--text2)'}">${fmt(actual)} <span style="opacity:.5">/ ${fmt(planned)}</span></span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill ${over?'red':'green'}" style="width:${pct}%"></div></div>
+        </div>`;
+      }).join('') : '<div style="color:var(--text2);font-size:.875rem">Транзакцій ще немає</div>'}
+      <div style="display:flex;justify-content:space-between;padding-top:14px;border-top:1px solid var(--border);margin-top:8px">
+        <span style="font-weight:600">Всього витрачено</span>
+        <span style="font-weight:700;color:var(--danger)">${fmt(totalActual)}</span>
+      </div>
+    </div>
+
+    <!-- CHART -->
+    <div class="chart-box">
+      <h3>Розподіл витрат</h3>
+      ${cats.length && totalActual > 0 ? '<canvas id="cat-chart"></canvas>' : '<div style="color:var(--text2);font-size:.875rem;padding-top:10px">Надішліть фото чеку через Telegram 📱</div>'}
+    </div>
+  </div>
+
+  <!-- RECENT TELEGRAM TRANSACTIONS -->
+  ${recentTx.length ? `
+  <div class="card" style="margin-bottom:20px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <h3 style="font-size:1rem;font-weight:600;color:var(--text2)">Останні витрати</h3>
+      <button class="btn btn-ghost btn-sm" onclick="showView('transactions')">Всі →</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Дата</th><th>Категорія</th><th>Опис</th><th>Сума</th><th>Джерело</th></tr></thead>
+        <tbody>
+          ${recentTx.map(t => {
+            const txDt = new Date(t.date);
+    const d = txDt.toLocaleDateString('uk-UA') + ' ' +
+      txDt.toLocaleTimeString('uk-UA', {hour:'2-digit',minute:'2-digit'});
+            const src = t.source==='telegram'?'<span class="badge badge-blue">📱 Telegram</span>':'<span class="badge badge-gray">Вручну</span>';
+            return `<tr><td>${d}</td><td><span class="badge badge-green">${t.category}</span></td><td>${t.description||'—'}</td><td style="color:var(--danger);font-weight:600">${fmt(t.amount)}</td><td>${src}</td></tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>` : ''}
+
+  <!-- DEBTS TABLE -->
+  ${renderDebtsTable(b, c)}
+
+  <!-- PAYOFF CARD -->
+  ${c.totalDebt > 0 ? `
+  <div class="payoff-card">
+    <h3>📅 Прогноз повного погашення</h3>
+    <div class="payoff-months">${c.payoffMonths >= 999 ? '∞' : c.payoffMonths + ' місяців'}</div>
+    <p>Орієнтовна дата закриття всіх боргів: <strong>${c.payoffMonths < 999 ? approxDate(c.payoffMonths) : 'Неможливо при поточному платежі'}</strong></p>
+    <div style="margin-top:14px;display:flex;flex-direction:column;gap:8px;font-size:.85rem">
+      ${(b.credits||[]).map(cr => `
+      <div style="display:flex;justify-content:space-between;padding:8px 12px;background:rgba(255,255,255,.04);border-radius:8px">
+        <span>🏦 ${cr.name||'Кредит'}</span>
+        <span style="color:var(--accent2)">${cr.monthsLeft ? cr.monthsLeft + ' міс. → ' + approxDate(Number(cr.monthsLeft)) : '—'}</span>
+      </div>`).join('')}
+      ${(b.installments||[]).map(ins => `
+      <div style="display:flex;justify-content:space-between;padding:8px 12px;background:rgba(255,255,255,.04);border-radius:8px">
+        <span>🛒 ${ins.name||'Розстрочка'}</span>
+        <span style="color:var(--accent2)">${ins.monthsLeft ? ins.monthsLeft + ' міс. → ' + approxDate(Number(ins.monthsLeft)) : '—'}</span>
+      </div>`).join('')}
+      ${(b.creditCards||[]).map((card,i) => {
+        const cd = c.cards[i]||{};
+        return `<div style="display:flex;justify-content:space-between;padding:8px 12px;background:rgba(248,113,113,.06);border-radius:8px;border:1px solid rgba(248,113,113,.15)">
+          <span>💳 ${card.name||'Картка'}</span>
+          <span style="color:${(cd.ccPayoffMonths||0) >= 999 ? 'var(--danger)' : 'var(--accent2)'}">
+            ${(cd.ccPayoffMonths||0) >= 999 ? '∞ збільшіть платіж!' : (cd.ccPayoffMonths||'—') + ' міс. → ' + (cd.ccPayoffMonths ? approxDate(cd.ccPayoffMonths) : '?')}
+          </span>
+        </div>`;
+      }).join('')}
+    </div>
+    <p style="margin-top:12px;font-size:.8rem;color:rgba(255,255,255,.4)">
+      Загальні щомісячні виплати: ${fmt(c.creditMonthly + c.installMonthly + c.ccTotalMonthly)}
+    </p>
+  </div>` : ''}
+  `;
+
+  // render chart with actual spending
+  setTimeout(() => {
+    const ctx = document.getElementById('cat-chart');
+    if(ctx && cats.length && totalActual > 0) {
+      const chartData = cats.map(name => actualByCategory[name]||0).filter(v=>v>0);
+      const chartLabels = cats.filter(name => (actualByCategory[name]||0) > 0);
+      new Chart(ctx, {
+        type:'doughnut',
+        data:{
+          labels: chartLabels,
+          datasets:[{ data: chartData, backgroundColor: chartColors.slice(0,chartLabels.length), borderWidth:0, hoverOffset:6 }]
+        },
+        options:{
+          plugins:{ legend:{ position:'bottom', labels:{ color:'#8892a4', font:{size:11,family:'Onest'}, boxWidth:12, padding:14 } } },
+          cutout:'68%'
+        }
+      });
+    }
+  }, 50);
+}
+
+function progressRow(label, val, total, color) {
+  const pct = total > 0 ? Math.min(100, (val/total)*100) : 0;
+  return `
+  <div class="progress-wrap">
+    <div class="progress-label"><span>${label}</span><span>${fmt(val)}</span></div>
+    <div class="progress-bar"><div class="progress-fill ${color}" style="width:${pct}%"></div></div>
+  </div>`;
+}
+
+function renderDebtsTable(b, c) {
+  const rows = [
+    ...(b.credits||[]).map(x => ({name:x.name,monthly:x.monthlyPayment,total:x.totalAmount,fullAmount:x.fullAmount||0,months:x.monthsLeft,type:i18n('creditType')})),
+    ...(b.installments||[]).map(x => ({name:x.name,monthly:x.monthlyPayment,total:x.totalAmount,fullAmount:x.fullAmount||0,months:x.monthsLeft,type:i18n('installmentType')})),
+  ];
+  const hasCC = (b.creditCards||[]).length > 0;
+  if(!rows.length && !hasCC) return '';
+
+  const ccRows = (b.creditCards||[]).map((card, i) => {
+    const cd = c.cards[i] || {};
+    const payoffLbl = !cd.ccPayoffMonths ? '—'
+      : cd.ccPayoffMonths >= 999 ? '<span style="color:var(--danger)">∞ збільшіть платіж!</span>'
+      : `<span style="color:var(--accent2)">${cd.ccPayoffMonths} міс.<br><small>${approxDate(cd.ccPayoffMonths)}</small></span>`;
+    return `<tr>
+      <td>
+        <div style="font-weight:600">${card.name||'Картка'}</div>
+        <div style="font-size:.75rem;color:var(--text2);margin-top:2px">
+          Відсотки: ${fmt(cd.interest)}/міс · Мін.: ${fmt(cd.minPayment)}<br>
+          На тіло: ${fmt(cd.bodyPayment)} · Борг наст.міс.: ${fmt(cd.nextDebt)}
+        </div>
+      </td>
+      <td><span class="badge badge-red">Картка</span></td>
+      <td style="color:var(--danger);font-weight:600">${fmt(card.debt)}</td>
+      <td>
+        <div style="font-weight:600">${fmt(cd.effectivePayment)}</div>
+        <div style="font-size:.75rem;color:var(--text2)">мін: ${fmt(cd.minPayment)}</div>
+      </td>
+      <td>${payoffLbl}</td>
+    </tr>`;
+  }).join('');
+
+  const debtRowHtml = rows.map(r => {
+    const pct = r.fullAmount > 0 ? Math.min(100, Math.max(2, ((r.fullAmount - r.total)/r.fullAmount)*100)) : 0;
+    const clr = r.type==='Кредит'||r.type==='Credit' ? '#f59e0b' : '#22d3ee';
+    const progressHtml = r.fullAmount > 0 ? `
+      <div style="margin-top:5px">
+        <div style="display:flex;justify-content:space-between;font-size:.72rem;color:var(--text2);margin-bottom:3px">
+          <span>${fmt(r.fullAmount - r.total)} ${i18n('paid')}</span><span>${fmt(r.total)} ${i18n('remaining2')}</span>
+        </div>
+        <div style="height:5px;background:var(--bg);border-radius:3px;overflow:hidden">
+          <div style="height:100%;width:${pct}%;background:${clr};border-radius:3px;transition:width .5s"></div>
+        </div>
+      </div>` : '';
+    return `<tr>
+      <td><div>${r.name||'—'}</div>${progressHtml}</td>
+      <td><span class="badge badge-${r.type==='Кредит'||r.type==='Credit'?'amber':'blue'}">${r.type}</span></td>
+      <td style="color:var(--danger);font-weight:600">${fmt(r.total)}${r.fullAmount > 0 ? '<div style="font-size:.72rem;color:var(--text2)">'+i18n('of')+' '+fmt(r.fullAmount)+'</div>' : ''}</td>
+      <td>${fmt(r.monthly)}</td>
+      <td style="color:var(--accent2)">${r.months ? r.months + ' ' + i18n('mo') : '—'}</td>
+    </tr>`;
+  }).join('');
+
+  return `
+  <div class="card" style="margin-bottom:20px">
+    <h3 style="font-size:1rem;font-weight:600;margin-bottom:18px;color:var(--text2)" data-i18n="debtsAndCredits">Борги та кредити</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th data-i18n="name">Назва</th><th data-i18n="type">Тип</th><th data-i18n="debtLeft">Залишок боргу</th><th data-i18n="payment">Платіж/міс</th><th data-i18n="tillPayoff">До погашення</th></tr></thead>
+        <tbody>
+          ${debtRowHtml}
+          ${ccRows}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+function approxDate(months) {
+  const d = new Date();
+  d.setMonth(d.getMonth() + months);
+  return d.toLocaleDateString('uk-UA', { month:'long', year:'numeric' });
+}
+
+// ─── OPEN/CLOSE BUDGET MODAL ─────────────────────
+function openBudgetModal(id) {
+  editingBudgetId = id || null;
+  lists.credits = [];
+  lists.installments = [];
+  lists.categories = [];
+  renderDynamicList('credits');
+  renderDynamicList('installments');
+  renderDynamicList('categories');
+
+  if(id) {
+    const b = budgets.find(x => x._id === id);
+    if(b) {
+      document.getElementById('budget-modal-title').textContent = 'Редагувати бюджет';
+      document.getElementById('b-title').value = b.title || '';
+      document.getElementById('b-month').value = b.month || '';
+      document.getElementById('b-income').value = b.income || '';
+      lists.creditCards = (b.creditCards||[]).map(x=>({...x}));
+      renderDynamicList('creditCards');
+      lists.credits = (b.credits||[]).map(x=>({fullAmount:0,...x}));
+      lists.installments = (b.installments||[]).map(x=>({fullAmount:0,...x}));
+      lists.categories = (b.categories||[]).map(x=>({...x}));
+      renderDynamicList('credits');
+      renderDynamicList('installments');
+      renderDynamicList('categories');
+    }
+  } else {
+    document.getElementById('budget-modal-title').textContent = 'Новий бюджет';
+    document.getElementById('b-title').value = '';
+    document.getElementById('b-month').value = new Date().toISOString().slice(0,7);
+    document.getElementById('b-income').value = '';
+    lists.creditCards = [];
+    renderDynamicList('creditCards');
+  }
+  document.getElementById('modal-budget').classList.add('open');
+}
+
+function closeBudgetModal() {
+  document.getElementById('modal-budget').classList.remove('open');
+}
+
+function addItem(type) {
+  if(type === 'credits' || type === 'installments') {
+    lists[type].push({ name:'', fullAmount:0, totalAmount:0, monthlyPayment:0, monthsLeft:0 });
+  } else {
+    lists[type].push({ name:'', planned:0 });
+  }
+  renderDynamicList(type);
+}
+
+function removeItem(type, idx) {
+  lists[type].splice(idx, 1);
+  renderDynamicList(type);
+}
+
+function renderDynamicList(type) {
+  const el = document.getElementById('list-' + type);
+  if(!lists[type].length) { el.innerHTML = ''; return; }
+
+  if(type === 'creditCards') {
+    el.innerHTML = lists[type].map((item, i) => `
+    <div class="dynamic-item" id="cc-item-${i}">
+      <div class="inp-wrap" style="min-width:140px"><label>${i18n('cardName')}</label>
+        <input value="${item.name||''}" onchange="lists['creditCards'][${i}].name=this.value" placeholder="ПриватБанк Visa"/>
+      </div>
+      <div class="inp-wrap"><label>Борг (грн)</label>
+        <input type="number" value="${item.debt||''}" onchange="lists['creditCards'][${i}].debt=+this.value;renderCCHint(${i})" placeholder="0"/>
+      </div>
+      <div class="inp-wrap"><label>Річна ставка (%)</label>
+        <input type="number" value="${item.rate||''}" onchange="lists['creditCards'][${i}].rate=+this.value;renderCCHint(${i})" placeholder="36"/>
+      </div>
+      <div class="inp-wrap"><label>Мій платіж/міс</label>
+        <input type="number" value="${item.payment||''}" id="cc-pay-${i}" onchange="lists['creditCards'][${i}].payment=+this.value;renderCCHint(${i})" placeholder="авто"/>
+      </div>
+      <button class="del-btn" onclick="removeItem('creditCards',${i})">✕</button>
+    </div>
+    <div id="cc-hint-${i}" style="margin:-6px 0 6px;padding:10px 14px;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.15);border-radius:8px;font-size:.8rem;display:none"></div>
+    `).join('');
+    // render hints after DOM update
+    setTimeout(() => lists['creditCards'].forEach((_,i) => renderCCHint(i)), 10);
+    return;
+  }
+  if(type === 'categories') {
+    el.innerHTML = lists[type].map((item, i) => `
+    <div class="dynamic-item">
+      <div class="inp-wrap"><label>${i18n('categoryName')}</label>
+        <input value="${item.name||''}" onchange="lists['${type}'][${i}].name=this.value" placeholder="${i18n('categoryName')}"/>
+      </div>
+      <div class="inp-wrap"><label>${i18n('plannedAmount')}</label>
+        <input type="number" value="${item.planned||''}" onchange="lists['${type}'][${i}].planned=+this.value" placeholder="0"/>
+      </div>
+      <button class="del-btn" onclick="removeItem('${type}',${i})">✕</button>
+    </div>`).join('');
+  } else {
+    el.innerHTML = lists[type].map((item, i) => `
+    <div class="dynamic-item">
+      <div class="inp-wrap" style="min-width:120px"><label data-i18n-lbl="name">${i18n('name')}</label>
+        <input value="${item.name||''}" onchange="lists['${type}'][${i}].name=this.value" placeholder="${i18n('name')}"/>
+      </div>
+      <div class="inp-wrap"><label data-i18n-lbl="fullAmount">${i18n('fullAmount')}</label>
+        <input type="number" value="${item.fullAmount||''}" onchange="lists['${type}'][${i}].fullAmount=+this.value" placeholder="0" title="${i18n('fullAmountHint')}"/>
+      </div>
+      <div class="inp-wrap"><label data-i18n-lbl="remaining">${i18n('remaining')}</label>
+        <input type="number" value="${item.totalAmount||''}" onchange="lists['${type}'][${i}].totalAmount=+this.value" placeholder="0"/>
+      </div>
+      <div class="inp-wrap"><label data-i18n-lbl="monthly">${i18n('monthly')}</label>
+        <input type="number" value="${item.monthlyPayment||''}" onchange="lists['${type}'][${i}].monthlyPayment=+this.value" placeholder="0"/>
+      </div>
+      <div class="inp-wrap"><label data-i18n-lbl="monthsLeft">${i18n('monthsLeft')}</label>
+        <input type="number" value="${item.monthsLeft||''}" onchange="lists['${type}'][${i}].monthsLeft=+this.value" placeholder="0"/>
+      </div>
+      <button class="del-btn" onclick="removeItem('${type}',${i})">✕</button>
+    </div>`).join('');
+  }
+}
+
+async function saveBudget() {
+  const payload = {
+    title: document.getElementById('b-title').value,
+    month: document.getElementById('b-month').value,
+    income: +document.getElementById('b-income').value || 0,
+    credits: lists.credits,
+    installments: lists.installments,
+    categories: lists.categories,
+    creditCards: lists.creditCards,
+  };
+  if(!payload.title) return toast('Вкажіть назву бюджету', 'error');
+  try {
+    let saved;
+    if(editingBudgetId) {
+      saved = await req('PUT', '/budget/' + editingBudgetId, payload);
+    } else {
+      saved = await req('POST', '/budget', payload);
+    }
+    closeBudgetModal();
+    await loadBudgets();
+    activeBudgetId = saved._id;
+    const savedBudget = budgets.find(b => b._id === saved._id) || budgets[0];
+    await loadTransactionsForBudget(saved._id);
+    renderDashboard(savedBudget);
+    showView('dashboard');
+    toast('Бюджет збережено ✅');
+  } catch(ex) { toast(ex.message, 'error'); }
+}
+
+async function deleteBudget(id) {
+  if(!confirm('Видалити бюджет?')) return;
+  try {
+    await req('DELETE', '/budget/' + id);
+    if(activeBudgetId === id) activeBudgetId = null;
+    await loadBudgets();
+    toast('Бюджет видалено');
+  } catch(ex) { toast(ex.message, 'error'); }
+}
+
+// ═══════════════════════════════════════════════
+//  TRANSACTIONS
+// ═══════════════════════════════════════════════
+async function loadTransactions() {
+  try {
+    transactions = await req('GET', '/transactions');
+    renderTxTable();
+  } catch(ex) { toast(ex.message, 'error'); }
+}
+
+function renderTxTable() {
+  const el = document.getElementById('tx-body');
+  if(!transactions.length) {
+    el.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text2);padding:40px">Транзакцій немає</td></tr>';
+    return;
+  }
+  const catColor = { 'Продукти':'green','Кафе/Ресторан':'amber','Транспорт':'blue','Комунальні':'amber','Одяг':'blue','Ліки/Аптека':'red','Розваги':'blue','Техніка':'blue','Інше':'gray' };
+  el.innerHTML = transactions.map(t => {
+    const d = new Date(t.date).toLocaleDateString('uk-UA');
+    const color = catColor[t.category] || 'gray';
+    const src = t.source === 'telegram' ? '<span class="badge badge-blue">Telegram</span>' : '<span class="badge badge-gray">Вручну</span>';
+    return `<tr>
+      <td>${d}</td>
+      <td><span class="badge badge-${color}">${t.category}</span></td>
+      <td>${t.description||'—'}</td>
+      <td style="font-weight:600;color:var(--danger)">${fmt(t.amount)}</td>
+      <td>${src}</td>
+      <td><button onclick="deleteTx('${t._id}')" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:1rem" title="Видалити">🗑</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function openTxModal() {
+  document.getElementById('tx-amount').value = '';
+  document.getElementById('tx-desc').value = '';
+  // datetime-local format: YYYY-MM-DDTHH:MM
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  document.getElementById('tx-date').value =
+    now.getFullYear() + '-' + pad(now.getMonth()+1) + '-' + pad(now.getDate()) +
+    'T' + pad(now.getHours()) + ':' + pad(now.getMinutes());
+  // populate budget selector
+  const sel = document.getElementById('tx-budget-select');
+  sel.innerHTML = budgets.map(b =>
+    `<option value="${b._id}" ${b._id === activeBudgetId ? 'selected' : ''}>${b.title}${b.month ? ' ('+b.month+')' : ''}</option>`
+  ).join('');
+  if(!budgets.length) {
+    sel.innerHTML = '<option value="">— ' + i18n('noDebts2') + ' —</option>';
+  }
+  document.getElementById('modal-tx').classList.add('open');
+}
+function closeTxModal() { document.getElementById('modal-tx').classList.remove('open'); }
+
+async function saveTx() {
+  const amount = +document.getElementById('tx-amount').value;
+  if(!amount) return toast(i18n('amount') + '!', 'error');
+  const budgetId = document.getElementById('tx-budget-select').value || activeBudgetId || null;
+  try {
+    await req('POST', '/transactions', {
+      amount,
+      category: document.getElementById('tx-cat').value,
+      description: document.getElementById('tx-desc').value,
+      date: document.getElementById('tx-date').value || new Date().toISOString(),
+      budgetId,
+    });
+    closeTxModal();
+    await loadTransactions();
+    if(budgetId && budgetId === activeBudgetId) {
+      await loadTransactionsForBudget(activeBudgetId);
+      const b = budgets.find(x => x._id === activeBudgetId);
+      if(b) renderDashboard(b);
+    }
+    toast('✅ ' + i18n('newTx'));
+  } catch(ex) { toast(ex.message, 'error'); }
+}
+
+async function deleteTx(id) {
+  try {
+    await req('DELETE', '/transactions/' + id);
+    await loadTransactions();
+    toast('Видалено');
+  } catch(ex) { toast(ex.message, 'error'); }
+}
+
+// ═══════════════════════════════════════════════
+//  PROFILE
+// ═══════════════════════════════════════════════
+function copyToken() {
+  const t = document.getElementById('api-token').textContent;
+  navigator.clipboard.writeText(t).then(() => toast('Токен скопійовано 📋'));
+}
+
+async function regenerateToken() {
+  if(!confirm('Оновити токен? Попередній перестане працювати.')) return;
+  try {
+    const data = await req('POST', '/auth/regenerate-token');
+    document.getElementById('api-token').textContent = data.apiToken;
+    if(currentUser) currentUser.apiToken = data.apiToken;
+    toast('Токен оновлено ✅');
+  } catch(ex) { toast(ex.message, 'error'); }
+}
+
+// ═══════════════════════════════════════════════
+//  PDF EXPORT — HTML-based, rendered via print
+// ═══════════════════════════════════════════════
+function askPdfLang() {
+  return new Promise(resolve => {
+    const overlay = document.createElement('div');
+    overlay.id = 'pdf-lang-overlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:9999;display:flex;align-items:center;justify-content:center';
+    const close = (lang) => { overlay.remove(); resolve(lang); };
+    overlay.innerHTML = `<div style="background:#13161e;border:1px solid #232736;border-radius:16px;padding:32px;text-align:center;min-width:280px;position:relative">
+      <button id="pdf-lang-close" style="position:absolute;top:12px;right:14px;background:none;border:none;color:#8892a4;font-size:1.2rem;cursor:pointer;line-height:1" title="Закрити">✕</button>
+      <div style="font-size:1.1rem;font-weight:700;margin-bottom:8px;color:#e8eaf0">Мова звіту / Report language</div>
+      <div style="color:#8892a4;font-size:.875rem;margin-bottom:24px">Оберіть мову для PDF звіту</div>
+      <div style="display:flex;gap:12px;justify-content:center">
+        <button id="pdf-lang-uk" style="padding:10px 24px;border-radius:8px;background:#4ade80;color:#0d1a0f;border:none;cursor:pointer;font-weight:700;font-size:.95rem">🇺🇦 Українська</button>
+        <button id="pdf-lang-en" style="padding:10px 24px;border-radius:8px;background:#22d3ee;color:#0d1a0f;border:none;cursor:pointer;font-weight:700;font-size:.95rem">🇬🇧 English</button>
+      </div>
+    </div>`;
+    document.body.appendChild(overlay);
+    document.getElementById('pdf-lang-uk').onclick = () => close('uk');
+    document.getElementById('pdf-lang-en').onclick = () => close('en');
+    document.getElementById('pdf-lang-close').onclick = () => close(currentLang);
+    // Click outside to close
+    overlay.addEventListener('click', e => { if(e.target === overlay) close(currentLang); });
+  });
+}
+
+async function generatePDF(budgetId) {
+  const b = budgets.find(x => x._id === budgetId);
+  if(!b) return;
+  const c = calcBudget(b);
+  const txList = budgetTransactions || [];
+  const actualByCategory = calcActualByCategory(txList);
+  const totalActual = txList.reduce((s,t) => s + Number(t.amount||0), 0);
+
+  const lang = await askPdfLang();
+  const uk = lang === 'uk';
+
+  const T = {
+    title: uk ? 'Фінансовий звіт' : 'Budget Report',
+    generated: uk ? 'Дата звіту:' : 'Generated:',
+    period: uk ? 'Період:' : 'Period:',
+    summary: uk ? 'Підсумок' : 'Summary',
+    income: uk ? 'Дохід' : 'Income',
+    plannedExp: uk ? 'Заплановані витрати' : 'Planned Expenses',
+    actualExp: uk ? 'Фактичні витрати' : 'Actual Spending',
+    balance: uk ? 'Залишок' : 'Balance',
+    totalDebt: uk ? 'Загальний борг' : 'Total Debt',
+    payoff: uk ? 'Приблизне закриття боргів' : 'Est. Debt Payoff',
+    credits: uk ? 'Кредити' : 'Credits',
+    installments: uk ? 'Розстрочки' : 'Installments',
+    creditCards: uk ? 'Кредитні картки' : 'Credit Cards',
+    categories: uk ? 'Категорії витрат' : 'Spending Categories',
+    debtsProgress: uk ? 'Прогрес погашення' : 'Payoff Progress',
+    planned: uk ? 'план' : 'planned',
+    actual: uk ? 'факт' : 'actual',
+    months: uk ? 'міс.' : 'mo.',
+    noDebt: uk ? 'Боргів немає 🎉' : 'No debts 🎉',
+    monthly: uk ? '/міс' : '/mo',
+    minPayment: uk ? 'Мін. платіж' : 'Min payment',
+    interest: uk ? 'Відсотки' : 'Interest',
+    remaining: uk ? 'залишилось' : 'remaining',
+  };
+
+  // Chart as base64 image
+  let chartImg = '';
+  const chartCats = Object.keys(actualByCategory).filter(k => actualByCategory[k] > 0);
+  if(chartCats.length > 0) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 320; canvas.height = 320;
+    const colors = ['#4ade80','#22d3ee','#f59e0b','#f87171','#a78bfa','#fb923c','#34d399','#60a5fa'];
+    const vals = chartCats.map(k => actualByCategory[k]);
+    const total = vals.reduce((s,v) => s+v, 0);
+    const ctx2 = canvas.getContext('2d');
+    let angle = -Math.PI/2;
+    vals.forEach((v, i) => {
+      const slice = (v/total) * Math.PI * 2;
+      ctx2.beginPath();
+      ctx2.moveTo(160,160);
+      ctx2.arc(160,160,130,angle,angle+slice);
+      ctx2.closePath();
+      ctx2.fillStyle = colors[i % colors.length];
+      ctx2.fill();
+      angle += slice;
+    });
+    // donut hole
+    ctx2.beginPath();
+    ctx2.arc(160,160,72,0,Math.PI*2);
+    ctx2.fillStyle = '#fff';
+    ctx2.fill();
+    chartImg = canvas.toDataURL('image/png');
+  }
+
+  const fmtN = (n) => Number(n||0).toLocaleString('uk-UA') + ' ₴';
+  const progressBar = (pct, color) => {
+    const w = Math.min(100, Math.max(0, pct));
+    return `<div style="height:8px;background:#e8eaed;border-radius:4px;overflow:hidden;margin-top:4px"><div style="height:100%;width:${w}%;background:${color};border-radius:4px"></div></div>`;
+  };
+
+  const allDebts = [
+    ...(b.credits||[]).map(x => ({name:x.name,total:x.totalAmount,fullAmount:x.fullAmount||0,monthly:x.monthlyPayment,months:x.monthsLeft,type:uk?'Кредит':'Credit'})),
+    ...(b.installments||[]).map(x => ({name:x.name,total:x.totalAmount,fullAmount:x.fullAmount||0,monthly:x.monthlyPayment,months:x.monthsLeft,type:uk?'Розстрочка':'Installment'})),
+  ];
+
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Arial,sans-serif;font-size:13px;color:#1a2035;background:#fff;padding:0}
+    .page{padding:36px 44px;max-width:794px;margin:0 auto}
+    h1{font-size:28px;font-weight:800;letter-spacing:-.5px;color:#0f172a}
+    h2{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#64748b;margin:28px 0 12px;padding-bottom:6px;border-bottom:2px solid #e2e8f0}
+    .meta{color:#94a3b8;font-size:12px;margin-top:4px}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:4px}
+    .stat{background:#f8fafc;border-radius:10px;padding:14px 18px;border-left:4px solid #e2e8f0}
+    .stat.green{border-color:#4ade80}.stat.blue{border-color:#22d3ee}.stat.red{border-color:#f87171}.stat.amber{border-color:#f59e0b}
+    .stat-label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#94a3b8;margin-bottom:4px}
+    .stat-value{font-size:20px;font-weight:800;color:#0f172a}
+    .stat-sub{font-size:11px;color:#94a3b8;margin-top:2px}
+    table{width:100%;border-collapse:collapse;font-size:12px}
+    th{background:#f1f5f9;padding:8px 10px;text-align:left;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#64748b}
+    td{padding:8px 10px;border-bottom:1px solid #f1f5f9;color:#334155}
+    tr:last-child td{border-bottom:none}
+    .badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700}
+    .b-green{background:#dcfce7;color:#166534}.b-blue{background:#dbeafe;color:#1e3a8a}.b-amber{background:#fef3c7;color:#92400e}.b-red{background:#fee2e2;color:#991b1b}
+    .progress-row{margin-bottom:10px}
+    .progress-label{display:flex;justify-content:space-between;font-size:11px;color:#64748b;margin-bottom:3px}
+    .chart-legend{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:12px;font-size:11px}
+    .legend-item{display:flex;align-items:center;gap:6px}
+    .legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+    @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+  </style>
+  </head><body><div class="page">
+
+  <!-- HEADER -->
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px;padding-bottom:20px;border-bottom:2px solid #0f172a">
+    <div>
+      <h1>${T.title}</h1>
+      <div class="meta">${b.title}</div>
+      <div class="meta">${T.period} ${b.month||'—'} &nbsp;·&nbsp; ${T.generated} ${new Date().toLocaleDateString(uk?'uk-UA':'en-GB')}</div>
+    </div>
+    <div style="text-align:right;font-size:11px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:.08em">BudgUA</div>
+  </div>
+
+  <!-- SUMMARY STATS -->
+  <h2>${T.summary}</h2>
+  <div class="grid2">
+    <div class="stat green"><div class="stat-label">${T.income}</div><div class="stat-value">${fmtN(b.income)}</div></div>
+    <div class="stat ${c.balance>=0?'blue':'red'}"><div class="stat-label">${T.balance}</div><div class="stat-value">${fmtN(c.balance)}</div><div class="stat-sub">${c.balance>=0?'✓ OK':'⚠ Перевитрата'}</div></div>
+    <div class="stat amber"><div class="stat-label">${T.plannedExp}</div><div class="stat-value">${fmtN(c.totalExpenses)}</div></div>
+    <div class="stat red"><div class="stat-label">${T.actualExp}</div><div class="stat-value">${fmtN(totalActual)}</div></div>
+  </div>
+  <div style="margin-top:12px" class="grid2">
+    <div class="stat amber"><div class="stat-label">${T.totalDebt}</div><div class="stat-value">${fmtN(c.totalDebt)}</div></div>
+    <div class="stat blue"><div class="stat-label">${T.payoff}</div><div class="stat-value">${c.payoffMonths > 0 ? c.payoffMonths + ' ' + T.months : T.noDebt}</div><div class="stat-sub">${c.payoffMonths > 0 ? approxDate(c.payoffMonths) : ''}</div></div>
+  </div>
+
+  <!-- DEBTS PROGRESS -->
+  ${allDebts.length > 0 || (b.creditCards||[]).length > 0 ? `
+  <h2>${T.debtsProgress}</h2>
+  ${allDebts.map(d => {
+    const origTotal = d.total + (d.months > 0 ? 0 : 0);
+    const pct = 0; // we don't have original amount, show as-is
+    return `<div class="progress-row">
+      <div class="progress-label"><span><strong>${d.name||'—'}</strong> <span class="badge b-${d.type==='Кредит'||d.type==='Credit'?'amber':'blue'}">${d.type}</span></span><span>${fmtN(d.total)} · ${d.months||'?'} ${T.months}</span></div>
+      ${progressBar(70, '#f59e0b')}
+    </div>`;
+  }).join('')}
+  ${(b.creditCards||[]).map((card,i) => {
+    const cd = c.cards[i]||{};
+    const pct2 = 100 - Math.min(100, (card.debt / (card.debt*1.5))*100);
+    const payStr = cd.ccPayoffMonths >= 999 ? '∞' : (cd.ccPayoffMonths||'?') + ' ' + T.months;
+    return `<div class="progress-row">
+      <div class="progress-label"><span><strong>${card.name||T.creditCards}</strong> <span class="badge b-red">💳</span></span><span>${fmtN(card.debt)} · ${payStr}</span></div>
+      ${progressBar(40, '#f87171')}
+      <div style="font-size:10px;color:#94a3b8;margin-top:3px">${T.interest}: ${fmtN(cd.interest)}${T.monthly} · ${T.minPayment}: ${fmtN(cd.minPayment)}</div>
+    </div>`;
+  }).join('')}
+  ` : ''}
+
+  <!-- CATEGORIES -->
+  ${chartCats.length > 0 ? `
+  <h2>${T.categories}</h2>
+  <div style="display:flex;gap:24px;align-items:flex-start">
+    ${chartImg ? `<img src="${chartImg}" style="width:140px;height:140px;flex-shrink:0"/>` : ''}
+    <div style="flex:1">
+      <div class="chart-legend">
+        ${chartCats.map((cat,i) => {
+          const colors2 = ['#4ade80','#22d3ee','#f59e0b','#f87171','#a78bfa','#fb923c','#34d399','#60a5fa'];
+          const planned = (b.categories||[]).find(c2=>c2.name===cat)?.planned||0;
+          const actual2 = actualByCategory[cat]||0;
+          const pctCat = planned > 0 ? Math.min(100,(actual2/planned)*100) : 100;
+          return `<div>
+            <div class="legend-item"><div class="legend-dot" style="background:${colors2[i%colors2.length]}"></div><span style="font-weight:600">${cat}</span></div>
+            <div style="color:#64748b;font-size:10px;margin-left:16px">${fmtN(actual2)} / ${fmtN(planned)} ${T.planned}</div>
+            ${progressBar(pctCat, colors2[i%colors2.length])}
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  </div>
+  ` : ''}
+
+  <!-- CREDITS & INSTALLMENTS TABLE -->
+  ${allDebts.length > 0 ? `
+  <h2>${T.credits} & ${T.installments}</h2>
+  <table>
+    <thead><tr><th>${uk?'Назва':'Name'}</th><th>${uk?'Тип':'Type'}</th><th>${uk?'Залишок':'Remaining'}</th><th>${uk?'Платіж/міс':'Monthly'}</th><th>${uk?'Місяців':'Months left'}</th></tr></thead>
+    <tbody>
+      ${allDebts.map(d=>`<tr>
+        <td>${d.name||'—'}</td>
+        <td><span class="badge b-${d.type==='Кредит'||d.type==='Credit'?'amber':'blue'}">${d.type}</span></td>
+        <td>${fmtN(d.total)}</td><td>${fmtN(d.monthly)}</td><td>${d.months||'—'}</td>
+      </tr>`).join('')}
+    </tbody>
+  </table>` : ''}
+
+  <!-- CREDIT CARDS TABLE -->
+  ${(b.creditCards||[]).length > 0 ? `
+  <h2>${T.creditCards}</h2>
+  <table>
+    <thead><tr><th>${uk?'Картка':'Card'}</th><th>${uk?'Борг':'Debt'}</th><th>${uk?'Ставка':'Rate'}</th><th>${uk?'Відсотки/міс':'Interest/mo'}</th><th>${uk?'Мін. платіж':'Min payment'}</th><th>${uk?'Мій платіж':'My payment'}</th><th>${uk?'Закрити за':'Payoff'}</th></tr></thead>
+    <tbody>
+      ${(b.creditCards||[]).map((card,i)=>{
+        const cd=c.cards[i]||{};
+        return `<tr>
+          <td><strong>${card.name||'—'}</strong></td>
+          <td>${fmtN(card.debt)}</td>
+          <td>${card.rate||0}%</td>
+          <td>${fmtN(cd.interest)}</td>
+          <td>${fmtN(cd.minPayment)}</td>
+          <td>${fmtN(cd.effectivePayment)}</td>
+          <td>${cd.ccPayoffMonths>=999?'∞':(cd.ccPayoffMonths||'—')+' '+T.months}</td>
+        </tr>`;
+      }).join('')}
+    </tbody>
+  </table>` : ''}
+
+  <!-- FOOTER -->
+  <div style="margin-top:40px;padding-top:16px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;font-size:10px;color:#94a3b8">
+    <span>BudgUA — ${T.title}</span>
+    <span>${new Date().toLocaleDateString(uk?'uk-UA':'en-GB')}</span>
+  </div>
+
+  </div></body></html>`;
+
+  const w = window.open('','_blank','width=900,height=700');
+  w.document.write(html);
+  w.document.close();
+  setTimeout(() => { w.focus(); w.print(); }, 600);
+  toast(uk ? 'Звіт відкрито — збережіть як PDF 📄' : 'Report opened — save as PDF 📄');
+}
+
+// ═══════════════════════════════════════════════
+//  CREDIT CARD CALCULATOR (modal hints per card)
+// ═══════════════════════════════════════════════
+function renderCCHint(i) {
+  const card = lists.creditCards[i];
+  if(!card) return;
+  const el = document.getElementById('cc-hint-' + i);
+  if(!el) return;
+  const debt = Number(card.debt)||0;
+  const rate = Number(card.rate)||0;
+  const payment = Number(card.payment)||0;
+  if(debt <= 0 || rate <= 0) { el.style.display = 'none'; return; }
+
+  const cd = calcCCDetails(debt, rate, payment);
+  const minStr = fmt(cd.minPayment);
+  const intStr = fmt(cd.interest);
+  const bodyStr = fmt(Math.max(0,cd.bodyPayment));
+  const nextStr = fmt(cd.nextDebt);
+  const payoffStr = cd.ccPayoffMonths >= 999 ? '∞ (збільшіть платіж!)' : cd.ccPayoffMonths + ' міс.';
+
+  // auto-fill payment field if empty
+  const payEl = document.getElementById('cc-pay-' + i);
+  if(payEl && !payEl.value) { payEl.value = Math.round(cd.minPayment); lists.creditCards[i].payment = Math.round(cd.minPayment); }
+
+  const warn = payment > 0 && payment < cd.minPayment
+    ? '<span style="color:var(--danger)">⚠️ Менше мінімуму! Банк нарахує штраф</span>' : '';
+
+  el.style.display = 'block';
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;flex-wrap:wrap">
+      <div><div style="color:var(--text2);font-size:.72rem;margin-bottom:2px">Відсотки/міс</div><div style="color:var(--accent3);font-weight:700">${intStr}</div></div>
+      <div><div style="color:var(--text2);font-size:.72rem;margin-bottom:2px">Мін. платіж (5%)</div><div style="color:var(--danger);font-weight:700">${minStr}</div></div>
+      <div><div style="color:var(--text2);font-size:.72rem;margin-bottom:2px">На тіло боргу</div><div style="color:var(--accent2);font-weight:700">${bodyStr}</div></div>
+      <div><div style="color:var(--text2);font-size:.72rem;margin-bottom:2px">Закрити за</div><div style="color:var(--accent);font-weight:700">${payoffStr}</div></div>
+    </div>
+    <div style="margin-top:6px;color:var(--text2)">Борг наступного місяця: <strong style="color:var(--text)">${nextStr}</strong> ${warn}</div>
+  `;
+}
+
+// ═══════════════════════════════════════════════
+//  DELETE ACCOUNT
+// ═══════════════════════════════════════════════
+async function confirmDeleteAccount() {
+  const answer = prompt(i18n('confirmDelete'));
+  if(answer !== 'DELETE') return;
+  const answer2 = prompt(i18n('confirmDelete') + ' (2/2)');
+  if(answer2 !== 'DELETE') return;
+  try {
+    await req('DELETE', '/auth/account');
+    toast('Акаунт видалено');
+    logout();
+  } catch(ex) {
+    toast(ex.message || 'Помилка видалення', 'error');
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  YEARLY STATS
+// ═══════════════════════════════════════════════
+async function renderYearlyStats() {
+  const el = document.getElementById('yearly-content');
+  const title = document.getElementById('yearly-title');
+  if(title) title.textContent = i18n('yearlyTitle');
+  if(!el) return;
+
+  // Load all transactions
+  let allTx = [];
+  try { allTx = await req('GET', '/transactions'); } catch { allTx = []; }
+
+  if(!allTx.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">📅</div><h3>${i18n('noYearlyData')}</h3><p>${i18n('addBudgetsFirst')}</p></div>`;
+    return;
+  }
+
+  const year = new Date().getFullYear();
+  const monthNames = i18n('monthNames');
+  const months = Array.from({length:12},(_,i) => i);
+
+  // Group by month
+  const byMonth = months.map(m => {
+    const txs = allTx.filter(tx => {
+      const d = new Date(tx.date);
+      return d.getFullYear() === year && d.getMonth() === m;
+    });
+    const spent = txs.reduce((s,t) => s + Number(t.amount||0), 0);
+    // Get income from budget for that month
+    const monthStr = year + '-' + String(m+1).padStart(2,'0');
+    const budget = budgets.find(b => b.month === monthStr);
+    const income = budget ? Number(budget.income||0) : 0;
+    const balance = income - spent;
+    return { m, name: monthNames[m], spent, income, balance, txCount: txs.length,
+      cats: txs.reduce((acc,t) => { acc[t.category]=(acc[t.category]||0)+Number(t.amount||0); return acc; }, {})
+    };
+  });
+
+  const totalSpent = byMonth.reduce((s,m) => s + m.spent, 0);
+  const totalIncome = byMonth.reduce((s,m) => s + m.income, 0);
+  const maxSpent = Math.max(...byMonth.map(m => m.spent), 1);
+
+  const chartColors = ['#4ade80','#22d3ee','#f59e0b','#f87171','#a78bfa','#fb923c','#34d399','#60a5fa'];
+
+  el.innerHTML = `
+  <!-- TOTALS ROW -->
+  <div class="grid-4" style="margin-bottom:24px">
+    <div class="stat-card green">
+      <div class="stat-label">${i18n('yearlyIncome')} ${year}</div>
+      <div class="stat-value green">${fmt(totalIncome)}</div>
+    </div>
+    <div class="stat-card red">
+      <div class="stat-label">${i18n('yearlyExpenses')} ${year}</div>
+      <div class="stat-value red">${fmt(totalSpent)}</div>
+    </div>
+    <div class="stat-card ${totalIncome-totalSpent>=0?'blue':'amber'}">
+      <div class="stat-label">${i18n('yearlyBalance')}</div>
+      <div class="stat-value ${totalIncome-totalSpent>=0?'blue':'red'}">${fmt(totalIncome-totalSpent)}</div>
+    </div>
+    <div class="stat-card blue">
+      <div class="stat-label">${i18n('yearlyTotal')}</div>
+      <div class="stat-value blue">${allTx.filter(t=>new Date(t.date).getFullYear()===year).length} tx</div>
+    </div>
+  </div>
+
+  <!-- MONTHLY BARS -->
+  <div class="card" style="margin-bottom:20px">
+    <h3 style="font-size:1rem;font-weight:600;margin-bottom:20px;color:var(--text2)">${year} — ${i18n('yearlyExpenses')}</h3>
+    <div style="display:flex;align-items:flex-end;gap:8px;height:160px;padding-bottom:24px;position:relative;border-bottom:1px solid var(--border)">
+      ${byMonth.map((m,i) => {
+        const h = maxSpent > 0 ? Math.max(4, (m.spent/maxSpent)*140) : 4;
+        const isPos = m.balance >= 0;
+        const hasData = m.spent > 0 || m.income > 0;
+        return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;position:relative" title="${m.name}: ${fmt(m.spent)}">
+          <div style="width:100%;background:${hasData?(isPos?'rgba(74,222,128,.7)':'rgba(248,113,113,.7)'):'var(--border)'};height:${h}px;border-radius:4px 4px 0 0;cursor:pointer;transition:opacity .2s;min-height:4px" onclick="showMonthDetail(${i},${year})"></div>
+          <div style="position:absolute;bottom:-20px;font-size:.65rem;color:var(--text2);white-space:nowrap">${m.name}</div>
+          ${hasData ? `<div style="position:absolute;top:-18px;font-size:.6rem;color:${isPos?'var(--accent)':'var(--danger)'};white-space:nowrap">${isPos?'↑':'↓'}</div>` : ''}
+        </div>`;
+      }).join('')}
+    </div>
+    <div style="display:flex;gap:16px;margin-top:24px;font-size:.78rem">
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:rgba(74,222,128,.7);display:inline-block"></span>${i18n('surplus')}</span>
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:rgba(248,113,113,.7);display:inline-block"></span>${i18n('deficit')}</span>
+    </div>
+  </div>
+
+  <!-- MONTHLY TABLE -->
+  <div class="card" style="margin-bottom:20px">
+    <h3 style="font-size:1rem;font-weight:600;margin-bottom:16px;color:var(--text2)">${i18n('yearlyStats')} ${year}</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>${i18n('month')}</th>
+          <th>${i18n('yearlyIncome')}</th>
+          <th>${i18n('yearlyExpenses')}</th>
+          <th>${i18n('yearlyBalance')}</th>
+          <th>Tx</th>
+        </tr></thead>
+        <tbody>
+          ${byMonth.filter(m => m.spent > 0 || m.income > 0).map(m => `<tr>
+            <td style="font-weight:600">${m.name}</td>
+            <td style="color:var(--accent)">${fmt(m.income)}</td>
+            <td style="color:var(--danger)">${fmt(m.spent)}</td>
+            <td style="color:${m.balance>=0?'var(--accent2)':'var(--danger)'};font-weight:600">${fmt(m.balance)}</td>
+            <td style="color:var(--text2)">${m.txCount}</td>
+          </tr>`).join('')}
+          <tr style="border-top:2px solid var(--border)">
+            <td style="font-weight:700">${i18n('yearlyTotal')}</td>
+            <td style="color:var(--accent);font-weight:700">${fmt(totalIncome)}</td>
+            <td style="color:var(--danger);font-weight:700">${fmt(totalSpent)}</td>
+            <td style="color:${totalIncome-totalSpent>=0?'var(--accent2)':'var(--danger)'};font-weight:700">${fmt(totalIncome-totalSpent)}</td>
+            <td style="color:var(--text2);font-weight:700">${allTx.filter(t=>new Date(t.date).getFullYear()===year).length}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="month-detail-box"></div>
+  `;
+
+  // Store for detail popup
+  window._yearlyData = byMonth;
+}
+
+function showMonthDetail(monthIdx, year) {
+  const m = window._yearlyData?.[monthIdx];
+  if(!m) return;
+  const el = document.getElementById('month-detail-box');
+  if(!el) return;
+  const cats = Object.entries(m.cats).sort((a,b)=>b[1]-a[1]);
+  const chartColors = ['#4ade80','#22d3ee','#f59e0b','#f87171','#a78bfa','#fb923c','#34d399','#60a5fa'];
+  el.innerHTML = `
+  <div class="card" style="border-color:var(--accent2)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <h3 style="font-size:1rem;font-weight:700">${m.name} ${year}</h3>
+      <button onclick="document.getElementById('month-detail-box').innerHTML=''" style="background:none;border:none;cursor:pointer;color:var(--text2);font-size:1.1rem">✕</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px">
+      <div style="background:var(--bg);border-radius:8px;padding:12px">
+        <div style="font-size:.72rem;color:var(--text2);margin-bottom:3px">${i18n('yearlyIncome')}</div>
+        <div style="font-weight:700;color:var(--accent)">${fmt(m.income)}</div>
+      </div>
+      <div style="background:var(--bg);border-radius:8px;padding:12px">
+        <div style="font-size:.72rem;color:var(--text2);margin-bottom:3px">${i18n('yearlyExpenses')}</div>
+        <div style="font-weight:700;color:var(--danger)">${fmt(m.spent)}</div>
+      </div>
+      <div style="background:var(--bg);border-radius:8px;padding:12px">
+        <div style="font-size:.72rem;color:var(--text2);margin-bottom:3px">${i18n('yearlyBalance')}</div>
+        <div style="font-weight:700;color:${m.balance>=0?'var(--accent2)':'var(--danger)'}">${fmt(m.balance)}</div>
+      </div>
+    </div>
+    ${cats.length ? `<div style="font-size:.85rem;font-weight:600;color:var(--text2);margin-bottom:10px">${i18n('catVsPlan')}</div>
+    ${cats.map(([cat,sum],i) => {
+      const pct = m.spent > 0 ? Math.min(100,(sum/m.spent)*100) : 0;
+      return `<div style="margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:3px">
+          <span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:50%;background:${chartColors[i%chartColors.length]};display:inline-block"></span>${cat}</span>
+          <span style="color:var(--text2)">${fmt(sum)} (${Math.round(pct)}%)</span>
+        </div>
+        <div style="height:5px;background:var(--bg);border-radius:3px;overflow:hidden">
+          <div style="height:100%;width:${pct}%;background:${chartColors[i%chartColors.length]};border-radius:3px"></div>
+        </div>
+      </div>`;
+    }).join('')}` : ''}
+  </div>`;
+  el.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+// ═══════════════════════════════════════════════
+//  WEBSOCKET real-time
+// ═══════════════════════════════════════════════
+let ws = null;
+let wsReconnectTimer = null;
+let budgetTransactions = [];
+
+function connectWS() {
+  if(!token) return;
+  if(ws && ws.readyState <= 1) return;
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+  const wsUrl = proto + '://' + location.host + '/ws?token=' + token;
+  ws = new WebSocket(wsUrl);
+  ws.onopen = () => {
+    console.log('WS connected');
+    setLiveIndicator(true);
+    if(wsReconnectTimer) { clearTimeout(wsReconnectTimer); wsReconnectTimer = null; }
+  };
+  ws.onmessage = async (e) => {
+    let msg;
+    try { msg = JSON.parse(e.data); } catch { return; }
+    if(msg.event === 'new_transaction') {
+      const tx = msg.data.transaction;
+      transactions.unshift(tx);
+      toast('📱 Telegram: ' + tx.category + '—' + fmt(tx.amount), 'success');
+      if(document.getElementById('view-transactions').classList.contains('active')) renderTxTable();
+      await loadBudgets();
+      if(activeBudgetId) {
+        const b = budgets.find(x => x._id === activeBudgetId);
+        if(b) { await loadTransactionsForBudget(activeBudgetId); renderDashboard(b); }
+      }
+    }
+  };
+  ws.onclose = () => { setLiveIndicator(false); wsReconnectTimer = setTimeout(connectWS, 4000); };
+  ws.onerror = () => ws.close();
+}
+
+function setLiveIndicator(online) {
+  const el = document.getElementById('live-dot');
+  const lbl = document.getElementById('live-label');
+  const sub = document.getElementById('live-sublabel');
+  if(!el) return;
+  if(online) {
+    el.style.background = 'var(--accent)';
+    el.style.boxShadow = '0 0 8px var(--accent)';
+    lbl.style.color = 'var(--accent)';
+    lbl.textContent = 'Online';
+    if(sub) sub.textContent = 'Telegram підключено';
+  } else {
+    el.style.background = 'var(--text3)';
+    el.style.boxShadow = 'none';
+    lbl.style.color = 'var(--text2)';
+    lbl.textContent = 'Offline';
+    if(sub) sub.textContent = 'Telegram бот';
+  }
+}
+
+async function loadTransactionsForBudget(budgetId) {
+  try { budgetTransactions = await req('GET', '/transactions?budgetId=' + budgetId); }
+  catch { budgetTransactions = []; }
+}
+
+// ═══════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════
+(async function init() {
+  applyI18n();
+  if(token) {
+    try {
+      await enterApp();
+    } catch {
+      token = '';
+      localStorage.removeItem('jwt');
+    }
+  }
+})();
+</script>
+</body>
+</html>

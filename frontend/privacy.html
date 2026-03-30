@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Політика конфіденційності — BudgUA</title>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d0f14;--surface:#13161e;--border:#232736;--accent:#22d3ee;--text:#e8eaf0;--text2:#8892a4;--radius:14px}
+body{background:var(--bg);color:var(--text);font-family:'Onest',sans-serif;font-size:15px;line-height:1.8;padding:0}
+.wrap{max-width:760px;margin:0 auto;padding:60px 24px}
+.back{display:inline-flex;align-items:center;gap:8px;color:var(--accent);text-decoration:none;font-size:.875rem;font-weight:600;margin-bottom:40px;padding:8px 16px;border:1px solid rgba(34,211,238,.3);border-radius:8px;transition:all .2s}
+.back:hover{background:rgba(34,211,238,.08)}
+h1{font-size:2rem;font-weight:700;margin-bottom:8px}
+.meta{color:var(--text2);font-size:.875rem;margin-bottom:48px}
+h2{font-size:1.1rem;font-weight:700;margin:36px 0 12px;color:var(--accent)}
+p{color:var(--text2);margin-bottom:14px}
+ul{color:var(--text2);padding-left:22px;margin-bottom:14px}
+ul li{margin-bottom:6px}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-top:40px}
+.highlight{background:rgba(34,211,238,.06);border:1px solid rgba(34,211,238,.15);border-radius:10px;padding:16px;margin:14px 0;color:var(--text)}
+.lang-toggle{display:flex;gap:8px;margin-bottom:32px}
+.lang-btn{padding:6px 16px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;font-family:inherit;font-size:.82rem;font-weight:600;transition:all .2s}
+.lang-btn.active{background:rgba(34,211,238,.1);border-color:var(--accent);color:var(--accent)}
+[lang-content]{display:none}[lang-content].active{display:block}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="/" class="back">← BudgUA</a>
+  <div class="lang-toggle">
+    <button class="lang-btn active" onclick="setL('uk')">🇺🇦 Українська</button>
+    <button class="lang-btn" onclick="setL('en')">🇬🇧 English</button>
+  </div>
+
+  <div lang-content="uk" class="active">
+    <h1>Політика конфіденційності</h1>
+    <div class="meta">Дата набрання чинності: 1 квітня 2025 р. · BudgUA</div>
+
+    <div class="highlight">
+      🔒 Ми серйозно ставимося до захисту ваших даних. Ця політика пояснює, які дані ми збираємо та як їх використовуємо.
+    </div>
+
+    <h2>1. Які дані ми збираємо</h2>
+    <p><strong>Дані облікового запису:</strong></p>
+    <ul>
+      <li>Ім'я та адреса електронної пошти (при реєстрації)</li>
+      <li>Зашифрований пароль (bcrypt хешування)</li>
+      <li>API-токен для інтеграції з Telegram</li>
+    </ul>
+    <p><strong>Фінансові дані (вводяться вами):</strong></p>
+    <ul>
+      <li>Бюджети: дохід, кредити, розстрочки, категорії витрат</li>
+      <li>Транзакції: сума, категорія, дата, опис</li>
+      <li>Telegram ID (при підключенні бота)</li>
+    </ul>
+    <p><strong>Дані від Telegram-бота:</strong></p>
+    <ul>
+      <li>Зображення чеків (передаються до Google Gemini для розпізнавання, не зберігаються)</li>
+      <li>Текстові повідомлення про витрати</li>
+    </ul>
+
+    <h2>2. Як ми використовуємо дані</h2>
+    <ul>
+      <li>Надання функціоналу Сервісу (управління бюджетом, аналітика)</li>
+      <li>Автентифікація та безпека облікового запису</li>
+      <li>Генерація звітів та статистики для вас</li>
+      <li>Покращення Сервісу (агрегована, знеособлена статистика)</li>
+    </ul>
+    <p>Ми <strong>не продаємо</strong> ваші дані третім особам і не використовуємо їх для реклами.</p>
+
+    <h2>3. Зберігання даних</h2>
+    <p>Усі дані зберігаються в базі даних MongoDB на захищеному сервері. Паролі зберігаються виключно у вигляді bcrypt-хешу. API-токени генеруються як криптографічно стійкі UUID.</p>
+
+    <h2>4. Треті сторони</h2>
+    <p>Сервіс використовує такі сторонні сервіси:</p>
+    <ul>
+      <li><strong>Google Gemini AI</strong> — для розпізнавання чеків (зображення не зберігаються після обробки)</li>
+      <li><strong>Telegram API</strong> — для роботи бота (відповідно до <a href="https://telegram.org/privacy" target="_blank">політики конфіденційності Telegram</a>)</li>
+    </ul>
+
+    <h2>5. Безпека</h2>
+    <ul>
+      <li>HTTPS шифрування для всіх з'єднань</li>
+      <li>JWT-токени для автентифікації з обмеженим терміном дії</li>
+      <li>Хешування паролів (bcrypt)</li>
+      <li>Захист від брутфорсу (тимчасове блокування при невдалих спробах входу)</li>
+    </ul>
+
+    <h2>6. Ваші права</h2>
+    <p>Ви маєте право:</p>
+    <ul>
+      <li>Отримати копію ваших даних</li>
+      <li>Видалити свій обліковий запис та всі пов'язані дані — через <em>Кабінет → Небезпечна зона</em>. <strong>Дія незворотня, дані не відновлюються.</strong></li>
+      <li>Виправити неточні дані</li>
+      <li>Відключити Telegram-бота в будь-який момент</li>
+    </ul>
+    <p>Для реалізації цих прав зверніться до нас за контактами нижче.</p>
+
+    <h2>7. Зміни до політики</h2>
+    <p>Ми можемо оновлювати цю Політику. Про суттєві зміни ми повідомлятимемо через Сервіс. Дата «набрання чинності» вгорі відображає останнє оновлення.</p>
+
+    <h2>8. Контакти</h2>
+    <div class="card">
+      <p><strong>Дмитро Вожжов / Dmytro Vozhzhov</strong></p>
+      <p>📧 <a href="mailto:admin@vozhzhov.biz.ua">admin@vozhzhov.biz.ua</a></p>
+      <p>💬 Telegram: <a href="https://t.me/dzim4ik1" target="_blank">https://t.me/dzim4ik1</a></p>
+    </div>
+  </div>
+
+  <div lang-content="en">
+    <h1>Privacy Policy</h1>
+    <div class="meta">Effective date: April 1, 2025 · BudgUA</div>
+
+    <div class="highlight">
+      🔒 We take your privacy seriously. This policy explains what data we collect and how we use it.
+    </div>
+
+    <h2>1. What Data We Collect</h2>
+    <p><strong>Account data:</strong></p>
+    <ul>
+      <li>Name and email address (on registration)</li>
+      <li>Encrypted password (bcrypt hashing)</li>
+      <li>API token for Telegram integration</li>
+    </ul>
+    <p><strong>Financial data (entered by you):</strong></p>
+    <ul>
+      <li>Budgets: income, loans, installments, expense categories</li>
+      <li>Transactions: amount, category, date, description</li>
+      <li>Telegram ID (when bot is connected)</li>
+    </ul>
+    <p><strong>Data from Telegram bot:</strong></p>
+    <ul>
+      <li>Receipt images (forwarded to Google Gemini for recognition, not stored)</li>
+      <li>Text messages about expenses</li>
+    </ul>
+
+    <h2>2. How We Use Data</h2>
+    <ul>
+      <li>Providing Service functionality (budget management, analytics)</li>
+      <li>Account authentication and security</li>
+      <li>Generating reports and statistics for you</li>
+      <li>Improving the Service (aggregated, anonymized stats)</li>
+    </ul>
+    <p>We <strong>do not sell</strong> your data to third parties and do not use it for advertising.</p>
+
+    <h2>3. Data Storage</h2>
+    <p>All data is stored in a MongoDB database on a secured server. Passwords are stored exclusively as bcrypt hashes. API tokens are generated as cryptographically strong UUIDs.</p>
+
+    <h2>4. Third Parties</h2>
+    <ul>
+      <li><strong>Google Gemini AI</strong> — for receipt recognition (images not stored after processing)</li>
+      <li><strong>Telegram API</strong> — for bot functionality (per <a href="https://telegram.org/privacy" target="_blank">Telegram Privacy Policy</a>)</li>
+    </ul>
+
+    <h2>5. Security</h2>
+    <ul>
+      <li>HTTPS encryption for all connections</li>
+      <li>JWT tokens with expiry for authentication</li>
+      <li>Password hashing (bcrypt)</li>
+      <li>Brute-force protection (temporary ban on repeated failed attempts)</li>
+    </ul>
+
+    <h2>6. Your Rights</h2>
+    <ul>
+      <li>Request a copy of your data</li>
+      <li>Delete your account and all associated data — via <em>Profile → Danger Zone</em>. <strong>This action is irreversible, data cannot be recovered.</strong></li>
+      <li>Correct inaccurate data</li>
+      <li>Disconnect the Telegram bot at any time</li>
+    </ul>
+
+    <h2>7. Policy Changes</h2>
+    <p>We may update this Policy. We will notify you of significant changes through the Service. The "effective date" at the top reflects the last update.</p>
+
+    <h2>8. Contact</h2>
+    <div class="card">
+      <p><strong>Dmytro Vozhzhov / Дмитро Вожжов</strong></p>
+      <p>📧 <a href="mailto:admin@vozhzhov.biz.ua">admin@vozhzhov.biz.ua</a></p>
+      <p>💬 Telegram: <a href="https://t.me/dzim4ik1" target="_blank">https://t.me/dzim4ik1</a></p>
+    </div>
+  </div>
+</div>
+<script>
+function setL(l){
+  document.querySelectorAll('[lang-content]').forEach(el=>el.classList.toggle('active',el.getAttribute('lang-content')===l));
+  document.querySelectorAll('.lang-btn').forEach((b,i)=>b.classList.toggle('active',(i===0&&l==='uk')||(i===1&&l==='en')));
+}
+</script>
+</body>
+</html>
