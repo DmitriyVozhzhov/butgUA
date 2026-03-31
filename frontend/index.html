@@ -259,8 +259,8 @@ canvas{max-height:260px}
       <h1>BudgUA</h1>
       <p id="auth-tagline">Сімейний фінансовий облік</p>
       <div style="display:flex;gap:8px;justify-content:center;margin-top:10px">
-        <button class="lang-btn active" id="auth-lang-uk" onclick="setLang('uk')" style="padding:5px 14px;border-radius:20px">🇺🇦 UK</button>
-        <button class="lang-btn" id="auth-lang-en" onclick="setLang('en')" style="padding:5px 14px;border-radius:20px">🇬🇧 EN</button>
+        <button class="lang-btn active" id="auth-lang-uk" onclick="setLang('uk')" style="padding:5px 14px;border-radius:20px">UA</button>
+        <button class="lang-btn" id="auth-lang-en" onclick="setLang('en')" style="padding:5px 14px;border-radius:20px">ENG</button>
       </div>
     </div>
     <div class="auth-card">
@@ -334,8 +334,8 @@ canvas{max-height:260px}
     </div>
     <div class="sidebar-user">
       <div class="lang-toggle">
-        <button class="lang-btn active" id="lang-btn-uk" onclick="setLang('uk')">🇺🇦 UK</button>
-        <button class="lang-btn" id="lang-btn-en" onclick="setLang('en')">🇬🇧 EN</button>
+        <button class="lang-btn active" id="lang-btn-uk" onclick="setLang('uk')">UA</button>
+        <button class="lang-btn" id="lang-btn-en" onclick="setLang('en')">ENG</button>
       </div>
       <div class="sidebar-user-name" id="sb-name">—</div>
       <div class="sidebar-user-email" id="sb-email">—</div>
@@ -398,51 +398,61 @@ canvas{max-height:260px}
 
     <div class="view" id="view-profile">
       <div class="view-title" data-i18n="profileTitle">Кабінет</div>
-      <div class="grid-2" style="gap:20px">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px">
+
+        <!-- Profile card -->
         <div class="card">
-          <h3 style="font-size:1rem;font-weight:700;margin-bottom:20px" data-i18n="profile">Профіль</h3>
-          <div class="form-row single">
-            <div class="inp-wrap">
-              <label data-i18n="nameLabel">Ім'я</label>
-              <input type="text" id="prof-name" readonly style="opacity:.6"/>
-            </div>
+          <h3 style="font-size:.9rem;font-weight:700;margin-bottom:14px;color:var(--text2)" data-i18n="profile">Профіль</h3>
+          <div style="font-weight:600;font-size:1rem" id="prof-name-disp">—</div>
+          <div style="color:var(--text2);font-size:.85rem;margin-bottom:16px" id="prof-email-disp">—</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <a href="/docs.html" target="_blank" class="btn btn-ghost btn-sm">📖 Документація</a>
           </div>
-          <div class="form-row single">
-            <div class="inp-wrap">
-              <label data-i18n="emailLabel">Email</label>
-              <input type="email" id="prof-email" readonly style="opacity:.6"/>
-            </div>
-          </div>
-          <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--border)">
-            <h4 style="font-size:.875rem;font-weight:700;color:var(--danger);margin-bottom:8px" data-i18n="dangerZone">⚠️ Небезпечна зона</h4>
-            <p style="font-size:.8rem;color:var(--text2);margin-bottom:12px" data-i18n="deleteAccountDesc">Видалення акаунту є незворотнім. Всі ваші бюджети, транзакції та дані будуть повністю видалені.</p>
-            <button class="btn btn-danger btn-sm" onclick="confirmDeleteAccount()" data-i18n="deleteAccount">🗑 Видалити акаунт та всі дані</button>
+          <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+            <p style="font-size:.78rem;color:var(--text2);margin-bottom:8px" data-i18n="deleteAccountDesc">Видалення незворотне.</p>
+            <button class="btn btn-danger btn-sm" onclick="confirmDeleteAccount()" data-i18n="deleteAccount">🗑 Видалити акаунт</button>
           </div>
         </div>
 
+        <!-- Telegram bot card -->
         <div class="card">
-          <h3 style="font-size:1rem;font-weight:700;margin-bottom:8px" data-i18n="apiTokenTitle">API Токен для Telegram бота</h3>
-          <p id="profile-token-desc" style="font-size:.85rem;color:var(--text2);margin-bottom:16px">
-            <span data-i18n="apiTokenDesc">Скопіюйте токен, відкрийте Telegram бот та надішліть:</span><br>
-            <code style="color:var(--accent2)">/start ВАШ_ТОКЕН</code>
+          <h3 style="font-size:.9rem;font-weight:700;margin-bottom:8px;color:var(--text2)" data-i18n="apiTokenTitle">Telegram бот</h3>
+          <p style="font-size:.8rem;color:var(--text2);margin-bottom:10px">
+            Бот: <a href="https://t.me/BudgUA_bot" target="_blank" style="color:var(--accent2);font-weight:700">@BudgUA_bot</a>
           </p>
-          <div class="token-block">
-            <span class="token-val" id="api-token">—</span>
+          <div style="font-size:.78rem;color:var(--text2);margin-bottom:10px" data-i18n="apiTokenDesc">Натисніть кнопку в боті «🔑 Підключити акаунт» та вставте токен:</div>
+          <div class="token-block" style="margin-bottom:10px">
+            <span class="token-val" id="api-token" style="font-size:.78rem">—</span>
             <button class="token-copy" onclick="copyToken()" title="Копіювати">📋</button>
           </div>
-          <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
-            <button class="btn btn-ghost btn-sm" onclick="regenerateToken()" data-i18n="refreshToken">🔄 Оновити токен</button>
-          </div>
-          <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border)">
-            <h4 style="font-size:.85rem;font-weight:600;color:var(--text2);margin-bottom:8px" data-i18n="howToConnect">Як підключити Telegram бота:</h4>
-            <ol style="font-size:.83rem;color:var(--text2);padding-left:18px;line-height:2">
-              <li data-i18n="step1">Знайдіть бота @BudgUA_bot в Telegram</li>
-              <li data-i18n="step2">Скопіюйте токен вище</li>
-              <li>Надішліть <code style="color:var(--accent)">/start ТОКЕН</code></li>
-              <li data-i18n="step4">Тепер надсилайте фото чеків — бот їх розпізнає!</li>
-            </ol>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-ghost btn-sm" onclick="regenerateToken()" data-i18n="refreshToken">🔄 Оновити</button>
+            <a href="/docs.html#telegram" target="_blank" class="btn btn-ghost btn-sm">📖 Інструкція</a>
           </div>
         </div>
+
+        <!-- AI API Keys card -->
+        <div class="card">
+          <h3 style="font-size:.9rem;font-weight:700;margin-bottom:8px;color:var(--text2)" data-i18n="aiKeysTitle">AI ключі (Gemini)</h3>
+          <p style="font-size:.78rem;color:var(--text2);margin-bottom:10px" data-i18n="aiKeysDesc">Використовуйте власний ключ Gemini API. Якщо не задано — використовується системний.</p>
+          <div class="inp-wrap" style="margin-bottom:10px">
+            <label style="font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text2)">Gemini API Key</label>
+            <div style="display:flex;gap:6px">
+              <input type="password" id="gemini-key-input" placeholder="AIza..." style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-family:monospace;font-size:.78rem;outline:none"/>
+              <button onclick="toggleGeminiKeyVisibility()" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px;cursor:pointer;color:var(--text2);font-size:.85rem" id="gemini-eye">👁</button>
+            </div>
+          </div>
+          <div id="gemini-key-status" style="font-size:.75rem;margin-bottom:10px;color:var(--text2)"></div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="btn btn-primary btn-sm" onclick="saveGeminiKey()" data-i18n="saveKey">💾 Зберегти</button>
+            <button class="btn btn-danger btn-sm" onclick="removeGeminiKey()" data-i18n="removeKey">✕ Видалити</button>
+            <a href="/docs.html#apikey" target="_blank" class="btn btn-ghost btn-sm">📖 Як отримати</a>
+          </div>
+          <div style="margin-top:10px;padding:8px 10px;background:rgba(34,211,238,.05);border:1px solid rgba(34,211,238,.1);border-radius:8px;font-size:.72rem;color:var(--text2)">
+            💡 При помилці — автоматично перемикається між gemini-2.5-flash → 1.5-flash → системний ключ
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -604,6 +614,12 @@ const LANGS = {
     telegramSource:'Telegram', manualSource:'Вручну',
     inPlus:'✅ В плюсі', overspend:'⚠️ Перевитрата',
     noPayoff:'Немає боргів 🎉',
+    aiKeysTitle:'AI ключі (Gemini)',
+    aiKeysDesc:'Власний ключ Gemini API. Якщо не задано — системний.',
+    saveKey:'💾 Зберегти',
+    removeKey:'✕ Видалити',
+    enterKey:'Введіть ключ',
+    tokenHint:'Якщо бюджет один — витрата зберігається автоматично. Якщо кілька бюджетів — бот запропонує обрати або встановіть бюджет за замовчуванням.',
     // new
     yearlyStats:'Рік', yearlyTitle:'Статистика за рік',
     noYearlyData:'Немає даних', addBudgetsFirst:'Додайте бюджети та транзакції',
@@ -654,6 +670,12 @@ const LANGS = {
     telegramSource:'Telegram', manualSource:'Manual',
     inPlus:'✅ Positive', overspend:'⚠️ Overspent',
     noPayoff:'No debts 🎉',
+    aiKeysTitle:'AI Keys (Gemini)',
+    aiKeysDesc:'Your own Gemini API key. Falls back to system key if not set.',
+    saveKey:'💾 Save',
+    removeKey:'✕ Remove',
+    enterKey:'Enter key',
+    tokenHint:'If you have one budget — the expense is saved automatically. With multiple budgets — the bot will ask you to choose, or set a default budget.',
     // new
     yearlyStats:'Year', yearlyTitle:'Yearly Statistics',
     noYearlyData:'No data', addBudgetsFirst:'Add budgets and transactions',
@@ -832,9 +854,14 @@ async function enterApp() {
   applyI18n();
   document.getElementById('sb-name').textContent = currentUser?.name || '—';
   document.getElementById('sb-email').textContent = currentUser?.email || '—';
-  document.getElementById('prof-name').value = currentUser?.name || '';
-  document.getElementById('prof-email').value = currentUser?.email || '';
+  const nameDisp = document.getElementById('prof-name-disp');
+  const emailDisp = document.getElementById('prof-email-disp');
+  if(nameDisp) nameDisp.textContent = currentUser?.name || '—';
+  if(emailDisp) emailDisp.textContent = currentUser?.email || '—';
   document.getElementById('api-token').textContent = currentUser?.apiToken || '—';
+  // Show Gemini key status
+  const gks = document.getElementById('gemini-key-status');
+  if(gks) gks.textContent = currentUser?.hasGeminiKey ? '✅ ' + (currentLang==='en'?'Custom key active':'Власний ключ активний') : (currentLang==='en'?'Using system key':'Використовується системний ключ');
   showView('dashboard');
   connectWS();
   await loadBudgets();
@@ -1474,6 +1501,38 @@ async function regenerateToken() {
     if(currentUser) currentUser.apiToken = data.apiToken;
     toast('Токен оновлено ✅');
   } catch(ex) { toast(ex.message, 'error'); }
+}
+
+// ═══════════════════════════════════════════════
+//  AI KEY MANAGEMENT
+// ═══════════════════════════════════════════════
+function toggleGeminiKeyVisibility() {
+  const inp = document.getElementById('gemini-key-input');
+  const eye = document.getElementById('gemini-eye');
+  if(inp.type === 'password') { inp.type = 'text'; eye.textContent = '🙈'; }
+  else { inp.type = 'password'; eye.textContent = '👁'; }
+}
+
+async function saveGeminiKey() {
+  const key = document.getElementById('gemini-key-input').value.trim();
+  if(!key) return toast(i18n('enterKey'), 'error');
+  try {
+    await req('POST', '/auth/api-key', { geminiKey: key });
+    if(currentUser) currentUser.hasGeminiKey = true;
+    document.getElementById('gemini-key-input').value = '';
+    document.getElementById('gemini-key-status').textContent = '✅ ' + (currentLang==='en'?'Key saved!':'Ключ збережено!');
+    toast('✅ Gemini API key ' + (currentLang==='en'?'saved':'збережено'));
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+async function removeGeminiKey() {
+  if(!confirm(currentLang==='en'?'Remove Gemini API key?':'Видалити ключ Gemini?')) return;
+  try {
+    await req('DELETE', '/auth/api-key');
+    if(currentUser) currentUser.hasGeminiKey = false;
+    document.getElementById('gemini-key-status').textContent = currentLang==='en'?'Using system key':'Використовується системний ключ';
+    toast(currentLang==='en'?'Key removed':'Ключ видалено');
+  } catch(e) { toast(e.message, 'error'); }
 }
 
 // ═══════════════════════════════════════════════

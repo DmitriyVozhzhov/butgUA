@@ -65,6 +65,27 @@ router.post('/regenerate-token', auth, async (req, res) => {
 });
 
 
+// Save AI API key
+router.post('/api-key', auth, async (req, res) => {
+  try {
+    const { geminiKey } = req.body;
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { geminiKey: geminiKey || null },
+      { new: true }
+    ).select('-password');
+    res.json({ success: true, hasGeminiKey: !!user.geminiKey });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// Remove AI API key
+router.delete('/api-key', auth, async (req, res) => {
+  try {
+    await User.findByIdAndUpdate(req.user.id, { geminiKey: null });
+    res.json({ success: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 // Delete account + all data
 router.delete('/account', auth, async (req, res) => {
   try {

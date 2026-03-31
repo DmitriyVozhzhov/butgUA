@@ -101,4 +101,27 @@ router.get('/stats', async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
+
+const TelegramSession = require('../models/TelegramSession');
+
+// GET /api/webhook/session/:chatId
+router.get('/session/:chatId', async (req, res) => {
+  try {
+    const sess = await TelegramSession.findOne({ chatId: req.params.chatId });
+    res.json(sess || {});
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// POST /api/webhook/session/:chatId
+router.post('/session/:chatId', async (req, res) => {
+  try {
+    const sess = await TelegramSession.findOneAndUpdate(
+      { chatId: req.params.chatId },
+      { $set: req.body },
+      { upsert: true, new: true }
+    );
+    res.json(sess);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 module.exports = router;
