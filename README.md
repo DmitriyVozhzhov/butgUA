@@ -1,142 +1,185 @@
-# 💰 BudgetUA — Сімейний бюджет
+# 💰 BudgUA — Family Budget Tracker
 
-Повноцінний сервіс для обліку сімейного бюджету з Telegram ботом, AI-розпізнаванням чеків та PDF-звітами.
+Full-stack family budget app with AI receipt scanning via Telegram bot.
 
-Протестувати можна тут - https://budg.vozhzhov.biz.ua/
-
-## 🏗 Стек
-- **Backend**: Node.js + Express
-- **Database**: MongoDB
+## 🏗 Stack
+- **Backend**: Node.js + Express + MongoDB
 - **Frontend**: Vanilla HTML/CSS/JS (nginx)
-- **AI**: Google Gemini 1.5 Flash (розпізнавання чеків)
+- **AI**: Google Gemini / OpenAI / DeepSeek (user's own key)
 - **Bot**: Telegram Bot API
+- **Auth**: JWT + Google OAuth (optional)
+- **Real-time**: WebSocket (live dashboard updates)
 - **Deploy**: Docker Compose
 
 ---
 
-## 🚀 Швидкий старт
+## 🚀 Quick Start
 
-### 1. Клонуємо та налаштовуємо
 ```bash
 git clone <repo>
 cd budget-app
 cp .env.example .env
-```
-
-### 2. Заповнюємо .env
-```env
-MONGO_USER=admin
-MONGO_PASS=ваш_пароль
-MONGO_URI=mongodb://admin:ваш_пароль@mongo:27017/budget?authSource=admin
-
-JWT_SECRET=мінімум_64_рандомних_символи
-
-TELEGRAM_BOT_TOKEN=токен_від_@BotFather
-BACKEND_URL=http://backend:4000
-
-GEMINI_API_KEY=ваш_ключ_з_ai.google.dev
-```
-
-### 3. Запускаємо
-```bash
+# Edit .env with your values
 docker compose up -d --build
 ```
 
-- 🌐 Сайт: http://localhost:3000
+- 🌐 Web: http://localhost:3000
 - 🔌 API: http://localhost:4000/api
+- 📖 Docs: http://localhost:3000/docs.html
 
 ---
 
-## 📱 Як підключити Telegram бота
+## ⚙️ .env Configuration
 
-1. Створіть бота через [@BotFather](https://t.me/BotFather) → `/newbot`
-2. Скопіюйте токен у `.env` → `TELEGRAM_BOT_TOKEN`
-3. Зареєструйтесь на сайті → Кабінет → Скопіюйте API токен
-4. Відкрийте бота в Telegram → надішліть `/start ВАШ_API_ТОКЕН`
-5. Тепер надсилайте фото чеків — бот їх розпізнає через Gemini!
+```env
+MONGO_USER=admin
+MONGO_PASS=your_password
+MONGO_URI=mongodb://admin:your_password@mongo:27017/budget?authSource=admin
 
----
+JWT_SECRET=random_64_char_string
 
-## 📄 Функціонал
+TELEGRAM_BOT_TOKEN=your_token_from_BotFather
 
-### Сайт
-- ✅ Реєстрація / Вхід (JWT)
-- ✅ Створення бюджетів: дохід, кредити, розстрочки, категорії, кредитна картка
-- ✅ Розрахунок залишку та загального боргу
-- ✅ Прогноз погашення боргів
-- ✅ Діаграма витрат по категоріям (Chart.js)
-- ✅ Список транзакцій
-- ✅ API токен для Telegram бота
-- ✅ Експорт звіту в PDF
+BACKEND_URL=http://backend:4000
+PORT=4000
 
-### Telegram бот
-- ✅ Прив'язка до акаунту через токен (`/start TOKEN`)
-- ✅ Розпізнавання фото чеків через Gemini Vision
-- ✅ Додавання витрат текстом ("Кава 85 грн")
-- ✅ Автоматичне збереження в базу даних
+# Optional: Google OAuth
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+```
+
+> **Note**: No system Gemini key needed. Users provide their own AI key in Profile.
 
 ---
 
-## 🗂 Структура проєкту
+## 🤖 Telegram Bot — @BudgUA_bot
+
+### How to connect:
+1. Go to BudgUA website → **Profile** → copy API token
+2. Open [@BudgUA_bot](https://t.me/BudgUA_bot) in Telegram
+3. Tap **🔑 Connect account** → paste token
+4. Done! Send receipt photos or type expenses
+
+### Bot menu:
+| Button | Action |
+|--------|--------|
+| 🔑 Connect account | Link your BudgUA account |
+| 💸 Add expense | Enter expense mode (receipt photo or text) |
+| 📊 Statistics | Monthly stats with plan vs actual |
+| 📋 Select budget | Set default budget for expenses |
+| UA / ENG | Toggle language |
+
+### Important:
+- **Expense mode**: All menu buttons are hidden, only `↩ Back` is shown
+- **Photo scanning**: Requires your own AI key (Gemini / OpenAI / DeepSeek)
+- **Text input**: Works without AI key
+- **Sessions**: Persist in MongoDB — reconnection is not needed after restart
+
+---
+
+## 🔑 AI Key Setup (for receipt scanning)
+
+Users add their own AI API key in **Profile → AI Keys**:
+
+| Provider | Get key at | Key format |
+|----------|-----------|------------|
+| Google Gemini | [aistudio.google.com](https://aistudio.google.com/app/apikey) | `AIzaSy...` |
+| OpenAI | [platform.openai.com](https://platform.openai.com/api-keys) | `sk-...` |
+| DeepSeek | [platform.deepseek.com](https://platform.deepseek.com) | `sk-...` |
+
+**Gemini fallback chain**: `gemini-2.5-flash` → `gemini-1.5-flash`
+
+---
+
+## 🔐 Google OAuth Setup (optional)
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create project → APIs & Services → Credentials
+3. Create OAuth 2.0 Client ID
+4. Authorized redirect URIs: `http://yourdomain.com/auth/google/callback`
+5. Add to `.env`:
+   ```env
+   GOOGLE_CLIENT_ID=...
+   GOOGLE_CLIENT_SECRET=...
+   ```
+6. Uncomment Google auth section in `backend/routes/auth.js`
+
+---
+
+## 📁 Project Structure
+
 ```
 budget-app/
-├── backend/
-│   ├── index.js
-│   ├── models/          User, Budget, Transaction
-│   ├── routes/          auth, budget, transactions, webhook
-│   └── middleware/      auth (JWT)
-├── frontend/
-│   ├── index.html       Весь SPA
-│   └── nginx.conf
-├── telegram-bot/
-│   └── bot.js           Gemini Vision + webhook
 ├── docker-compose.yml
-└── .env.example
+├── .env.example
+├── backend/
+│   ├── index.js              — Express + WebSocket server
+│   ├── models/
+│   │   ├── User.js           — User + AI key storage
+│   │   ├── Budget.js         — Budget with credits/cards
+│   │   ├── Transaction.js    — Expense records
+│   │   └── TelegramSession.js — Persistent bot sessions
+│   └── routes/
+│       ├── auth.js           — Login/register/Google/API keys
+│       ├── budget.js         — CRUD budgets
+│       ├── transactions.js   — CRUD transactions
+│       └── webhook.js        — Telegram webhook + session API
+├── frontend/
+│   ├── index.html            — Full SPA
+│   ├── docs.html             — Documentation
+│   ├── terms.html            — Terms of Use
+│   ├── privacy.html          — Privacy Policy
+│   └── nginx.conf
+└── telegram-bot/
+    └── bot.js                — Bot with persistent sessions + multi-AI
 ```
 
 ---
 
-## 🔌 API Endpoints
+## 🔌 API Reference
 
 ### Auth
-| Method | Path | Description |
-|--------|------|-------------|
-| POST | /api/auth/register | Реєстрація |
-| POST | /api/auth/login | Вхід |
-| GET | /api/auth/me | Профіль + API токен |
-| POST | /api/auth/regenerate-token | Новий API токен |
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| POST | /api/auth/register | — | Register |
+| POST | /api/auth/login | — | Login |
+| POST | /api/auth/google | — | Google OAuth |
+| GET | /api/auth/me | JWT | Profile |
+| POST | /api/auth/api-key | JWT | Save AI key |
+| DELETE | /api/auth/api-key | JWT | Remove AI key |
+| POST | /api/auth/regenerate-token | JWT | New API token |
+| DELETE | /api/auth/account | JWT | Delete account |
 
 ### Budget
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | /api/budget | Всі бюджети |
-| POST | /api/budget | Створити бюджет |
-| PUT | /api/budget/:id | Оновити |
-| DELETE | /api/budget/:id | Видалити |
+| Method | Path | Auth |
+|--------|------|------|
+| GET | /api/budget | JWT |
+| POST | /api/budget | JWT |
+| PUT | /api/budget/:id | JWT |
+| DELETE | /api/budget/:id | JWT |
 
 ### Transactions
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | /api/transactions | Список |
-| POST | /api/transactions | Створити вручну |
-| DELETE | /api/transactions/:id | Видалити |
+| Method | Path | Auth |
+|--------|------|------|
+| GET | /api/transactions | JWT |
+| POST | /api/transactions | JWT |
+| DELETE | /api/transactions/:id | JWT |
 
-### Webhook (для бота)
-| Method | Path | Headers | Description |
-|--------|------|---------|-------------|
-| POST | /api/webhook/transaction | x-api-token | Зберегти транзакцію |
-| POST | /api/webhook/link-telegram | — | Прив'язати Telegram |
+### Webhook (Telegram Bot)
+| Method | Path | Header |
+|--------|------|--------|
+| POST | /api/webhook/transaction | x-api-token |
+| POST | /api/webhook/link-telegram | — |
+| GET | /api/webhook/budgets | x-api-token |
+| GET | /api/webhook/stats | x-api-token |
+| GET | /api/webhook/session/:chatId | — |
+| POST | /api/webhook/session/:chatId | — |
 
 ---
 
-## 🔑 Отримання ключів
+## 👤 Author
 
-**Gemini API Key:**
-1. Перейдіть на https://ai.google.dev
-2. "Get API key" → Create API key
-3. Вставте в `.env` як `GEMINI_API_KEY`
-
-**Telegram Bot Token:**
-1. Напишіть [@BotFather](https://t.me/BotFather) в Telegram
-2. `/newbot` → введіть назву і username
-3. Скопіюйте токен в `.env` як `TELEGRAM_BOT_TOKEN`
+**Dmytro Vozhzhov / Дмитро Вожжов**
+- Telegram: [t.me/dzim4ik1](https://t.me/dzim4ik1)
+- Email: admin@vozhzhov.biz.ua
+- Bot: [@BudgUA_bot](https://t.me/BudgUA_bot)

@@ -9,7 +9,9 @@ const userSchema = new mongoose.Schema(
     password: { type: String, required: true },
     apiToken: { type: String, default: () => uuidv4().replace(/-/g, '') },
     telegramChatId: { type: String, default: null },
-    geminiKey: { type: String, default: null },
+    aiProvider: { type: String, default: 'gemini' },  // gemini|openai|deepseek
+    aiKey: { type: String, default: null },
+    googleId: { type: String, default: null },
   },
   { timestamps: true }
 );

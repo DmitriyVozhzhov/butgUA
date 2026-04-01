@@ -280,7 +280,16 @@ canvas{max-height:260px}
           <input type="password" id="login-pass" placeholder="••••••••" required/>
         </div>
         <div class="err" id="login-err"></div>
-        <button class="btn btn-primary" type="submit">Увійти</button>
+        <button class="btn btn-primary" type="submit" data-i18n="loginBtn">Увійти</button>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:4px">
+          <div style="flex:1;height:1px;background:var(--border)"></div>
+          <span style="font-size:.75rem;color:var(--text3)">or / або</span>
+          <div style="flex:1;height:1px;background:var(--border)"></div>
+        </div>
+        <button type="button" class="btn btn-ghost" onclick="signInWithGoogle()" style="display:flex;align-items:center;justify-content:center;gap:8px">
+          <svg width="16" height="16" viewBox="0 0 18 18"><path fill="#4285F4" d="M16.51 8H8.98v3h4.3c-.18 1-.74 1.48-1.6 2.04v2.01h2.6a7.8 7.8 0 0 0 2.38-5.88c0-.57-.05-.66-.15-1.18z"/><path fill="#34A853" d="M8.98 17c2.16 0 3.97-.72 5.3-1.94l-2.6-2a4.8 4.8 0 0 1-7.18-2.54H1.83v2.07A8 8 0 0 0 8.98 17z"/><path fill="#FBBC05" d="M4.5 10.52a4.8 4.8 0 0 1 0-3.04V5.41H1.83a8 8 0 0 0 0 7.18l2.67-2.07z"/><path fill="#EA4335" d="M8.98 4.18c1.17 0 2.23.4 3.06 1.2l2.3-2.3A8 8 0 0 0 1.83 5.4L4.5 7.49a4.77 4.77 0 0 1 4.48-3.3z"/></svg>
+          Sign in with Google
+        </button>
       </form>
 
       <!-- REGISTER -->
@@ -352,12 +361,12 @@ canvas{max-height:260px}
 
     <!-- ── DASHBOARD ── -->
     <div class="view active" id="view-dashboard">
-      <div class="view-title">Дашборд</div>
+      <div class="view-title" id="dash-view-title" data-i18n="dashTitle">Дашборд</div>
       <div id="dash-content">
         <div class="empty">
           <div class="empty-icon">📊</div>
           <h3>Оберіть або створіть бюджет</h3>
-          <p>Перейдіть до розділу «Бюджети» щоб розпочати</p>
+          <p data-i18n="dashEmptySub">Перейдіть до розділу «Бюджети» щоб розпочати</p>
         </div>
       </div>
     </div>
@@ -365,8 +374,8 @@ canvas{max-height:260px}
     <!-- ── BUDGETS ── -->
     <div class="view" id="view-budgets">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
-        <div class="view-title" style="margin:0">Бюджети</div>
-        <button class="btn btn-primary" onclick="openBudgetModal()">+ Новий бюджет</button>
+        <div class="view-title" style="margin:0" data-i18n="budgetsTitle">Бюджети</div>
+        <button class="btn btn-primary" id="new-budget-btn" onclick="openBudgetModal()" data-i18n="newBudget">+ Новий бюджет</button>
       </div>
       <div class="budget-cards" id="budget-cards-list"></div>
     </div>
@@ -374,8 +383,8 @@ canvas{max-height:260px}
     <!-- ── TRANSACTIONS ── -->
     <div class="view" id="view-transactions">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
-        <div class="view-title" style="margin:0">Транзакції</div>
-        <button class="btn btn-primary" onclick="openTxModal()">+ Додати</button>
+        <div class="view-title" style="margin:0" data-i18n="transactionsTitle">Транзакції</div>
+        <button class="btn btn-primary" id="add-tx-btn" onclick="openTxModal()" data-i18n="addTxBtn">+ Додати</button>
       </div>
       <div class="card">
         <div class="table-wrap">
@@ -433,23 +442,32 @@ canvas{max-height:260px}
 
         <!-- AI API Keys card -->
         <div class="card">
-          <h3 style="font-size:.9rem;font-weight:700;margin-bottom:8px;color:var(--text2)" data-i18n="aiKeysTitle">AI ключі (Gemini)</h3>
-          <p style="font-size:.78rem;color:var(--text2);margin-bottom:10px" data-i18n="aiKeysDesc">Використовуйте власний ключ Gemini API. Якщо не задано — використовується системний.</p>
-          <div class="inp-wrap" style="margin-bottom:10px">
-            <label style="font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text2)">Gemini API Key</label>
+          <h3 style="font-size:.9rem;font-weight:700;margin-bottom:8px;color:var(--text2)" data-i18n="aiKeysTitle">AI ключі</h3>
+          <p style="font-size:.78rem;color:var(--text2);margin-bottom:10px" data-i18n="aiKeysDesc">Власний ключ AI. Потрібен для розпізнавання фото чеків у Telegram.</p>
+          <div class="inp-wrap" style="margin-bottom:8px">
+            <label style="font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text2)" data-i18n="aiProvider">Провайдер</label>
+            <select id="ai-provider-select" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-family:inherit;font-size:.85rem;outline:none" onchange="onProviderChange()">
+              <option value="gemini">Google Gemini</option>
+              <option value="openai">OpenAI (GPT-4o)</option>
+              <option value="deepseek">DeepSeek</option>
+            </select>
+          </div>
+          <div class="inp-wrap" style="margin-bottom:8px">
+            <label style="font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text2)">API Key</label>
             <div style="display:flex;gap:6px">
-              <input type="password" id="gemini-key-input" placeholder="AIza..." style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-family:monospace;font-size:.78rem;outline:none"/>
-              <button onclick="toggleGeminiKeyVisibility()" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px;cursor:pointer;color:var(--text2);font-size:.85rem" id="gemini-eye">👁</button>
+              <input type="password" id="ai-key-input" placeholder="Ключ API..." style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-family:monospace;font-size:.78rem;outline:none"/>
+              <button onclick="toggleAiKeyVisibility()" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px;cursor:pointer;color:var(--text2);font-size:.85rem" id="ai-eye">👁</button>
             </div>
           </div>
-          <div id="gemini-key-status" style="font-size:.75rem;margin-bottom:10px;color:var(--text2)"></div>
+          <div id="ai-key-placeholder" style="font-size:.72rem;color:var(--text3);margin-bottom:8px">Gemini: AIzaSy... | OpenAI: sk-... | DeepSeek: sk-...</div>
+          <div id="ai-key-status" style="font-size:.75rem;margin-bottom:8px;color:var(--text2)"></div>
           <div style="display:flex;gap:6px;flex-wrap:wrap">
-            <button class="btn btn-primary btn-sm" onclick="saveGeminiKey()" data-i18n="saveKey">💾 Зберегти</button>
-            <button class="btn btn-danger btn-sm" onclick="removeGeminiKey()" data-i18n="removeKey">✕ Видалити</button>
-            <a href="/docs.html#apikey" target="_blank" class="btn btn-ghost btn-sm">📖 Як отримати</a>
+            <button class="btn btn-primary btn-sm" onclick="saveAiKey()" data-i18n="saveKey">💾 Зберегти</button>
+            <button class="btn btn-danger btn-sm" onclick="removeAiKey()" data-i18n="removeKey">✕ Видалити</button>
+            <a href="/docs.html#apikey" target="_blank" class="btn btn-ghost btn-sm">📖 Де взяти</a>
           </div>
           <div style="margin-top:10px;padding:8px 10px;background:rgba(34,211,238,.05);border:1px solid rgba(34,211,238,.1);border-radius:8px;font-size:.72rem;color:var(--text2)">
-            💡 При помилці — автоматично перемикається між gemini-2.5-flash → 1.5-flash → системний ключ
+            ⚠️ Без AI ключа фото чеків не розпізнаватимуться. Текстове введення працює завжди.
           </div>
         </div>
 
@@ -462,12 +480,12 @@ canvas{max-height:260px}
 <!-- ═══════════ BUDGET MODAL ═══════════ -->
 <div class="modal-overlay" id="modal-budget">
   <div class="modal" style="max-width:680px">
-    <h2 id="budget-modal-title">Новий бюджет</h2>
+    <h2 id="budget-modal-title" data-i18n="newBudgetTitle">Новий бюджет</h2>
 
     <div class="form-row">
       <div class="inp-wrap">
         <label data-i18n="budgetName">Назва бюджету</label>
-        <input type="text" id="b-title" placeholder="Наприклад: Червень 2025"/>
+        <input type="text" id="b-title" id="b-title-inp"/>
       </div>
       <div class="inp-wrap">
         <label data-i18n="month">Місяць</label>
@@ -510,8 +528,8 @@ canvas{max-height:260px}
     <div class="dynamic-list" id="list-creditCards"></div>
 
     <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeBudgetModal()">Скасувати</button>
-      <button class="btn btn-primary" onclick="saveBudget()">Зберегти бюджет</button>
+      <button class="btn btn-ghost" id="modal-cancel-btn" onclick="closeBudgetModal()" data-i18n="modalCancel">Скасувати</button>
+      <button class="btn btn-primary" id="modal-save-btn" onclick="saveBudget()" data-i18n="modalSaveBudget">Зберегти бюджет</button>
     </div>
   </div>
 </div>
@@ -535,11 +553,7 @@ canvas{max-height:260px}
     <div class="form-row">
       <div class="inp-wrap">
         <label data-i18n="category">Категорія</label>
-        <select id="tx-cat">
-          <option>Продукти</option><option>Кафе/Ресторан</option><option>Транспорт</option>
-          <option>Комунальні</option><option>Одяг</option><option>Ліки/Аптека</option>
-          <option>Розваги</option><option>Техніка</option><option>Інше</option>
-        </select>
+        <select id="tx-cat" data-i18n-cats="1"></select>
       </div>
       <div class="inp-wrap">
         <label data-i18n="dateTime">Дата та час</label>
@@ -553,8 +567,8 @@ canvas{max-height:260px}
       </div>
     </div>
     <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeTxModal()" data-i18n="cancel">Скасувати</button>
-      <button class="btn btn-primary" onclick="saveTx()" data-i18n="save">Зберегти</button>
+      <button class="btn btn-ghost" onclick="closeTxModal()" data-i18n="txModalCancel">Скасувати</button>
+      <button class="btn btn-primary" onclick="saveTx()" data-i18n="txModalSave">Зберегти</button>
     </div>
   </div>
 </div>
@@ -563,6 +577,13 @@ canvas{max-height:260px}
 <div class="toast" id="toast"></div>
 
 <script>
+// ═══════════════════════════════════════════════
+//  LANGUAGE INIT (runs first, before any function calls)
+// ═══════════════════════════════════════════════
+if(!localStorage.getItem('budgua_lang')) {
+  const _bl = (navigator.language || navigator.userLanguage || 'uk').toLowerCase();
+  localStorage.setItem('budgua_lang', _bl.startsWith('en') ? 'en' : 'uk');
+}
 // ═══════════════════════════════════════════════
 //  I18N
 // ═══════════════════════════════════════════════
@@ -614,8 +635,9 @@ const LANGS = {
     telegramSource:'Telegram', manualSource:'Вручну',
     inPlus:'✅ В плюсі', overspend:'⚠️ Перевитрата',
     noPayoff:'Немає боргів 🎉',
-    aiKeysTitle:'AI ключі (Gemini)',
-    aiKeysDesc:'Власний ключ Gemini API. Якщо не задано — системний.',
+    aiKeysTitle:'AI ключі',
+    aiKeysDesc:'Власний ключ AI. Потрібен для розпізнавання фото чеків.',
+    aiProvider:'Провайдер',
     saveKey:'💾 Зберегти',
     removeKey:'✕ Видалити',
     enterKey:'Введіть ключ',
@@ -633,6 +655,49 @@ const LANGS = {
     yearlyBalance:'Баланс', yearlyTotal:'Всього за рік:',
     monthNames:['Січ','Лют','Бер','Кві','Тра','Чер','Лип','Сер','Вер','Жов','Лис','Гру'],
     surplus:'Профіцит', deficit:'Дефіцит',
+    txWord:'транзакцій',
+    // dashboard empty
+    dashEmpty:'Оберіть або створіть бюджет',
+    dashEmptySub:'Перейдіть до розділу «Бюджети» щоб розпочати',
+    // budgets page
+    newBudget:'+ Новий бюджет',
+    // transactions page
+    addTxBtn:'+ Додати',
+    noTxMsg:'Транзакцій немає',
+    // budget modal  
+    newBudgetTitle:'Новий бюджет',
+    editBudgetTitle:'Редагувати бюджет',
+    modalCancel:'Скасувати',
+    modalSaveBudget:'Зберегти бюджет',
+    // tx modal
+    txModalCancel:'Скасувати',
+    txModalSave:'Зберегти',
+    // budget card
+    incomeLabel:'Дохід',
+    expensesLabel:'Витрати',
+    balanceLabel:'Залишок',
+    // live indicator
+    liveOnline:'Online',
+    liveOffline:'Offline',
+    liveTgConnected:'Telegram підключено',
+    liveTgBot:'Telegram бот',
+    // dashboard
+    dashTitle:'Дашборд',
+    budgetsTitle:'Бюджети',
+    transactionsTitle:'Транзакції',
+    // PDF button  
+    pdfBtn:'📄 Звіт PDF',
+    editBtn:'✏️ Редагувати',
+    // tx categories
+    catGroceries:'Продукти',
+    catCafe:'Кафе/Ресторан',
+    catTransport:'Транспорт',
+    catUtilities:'Комунальні',
+    catClothing:'Одяг',
+    catPharmacy:'Ліки/Аптека',
+    catEntertainment:'Розваги',
+    catTech:'Техніка',
+    catOther:'Інше',
   },
   en: {
     dashboard:'Dashboard', budgets:'Budgets', transactions:'Transactions', profile:'Profile',
@@ -670,8 +735,9 @@ const LANGS = {
     telegramSource:'Telegram', manualSource:'Manual',
     inPlus:'✅ Positive', overspend:'⚠️ Overspent',
     noPayoff:'No debts 🎉',
-    aiKeysTitle:'AI Keys (Gemini)',
-    aiKeysDesc:'Your own Gemini API key. Falls back to system key if not set.',
+    aiKeysTitle:'AI Keys',
+    aiKeysDesc:'Your own AI key. Required for receipt photo scanning.',
+    aiProvider:'Provider',
     saveKey:'💾 Save',
     removeKey:'✕ Remove',
     enterKey:'Enter key',
@@ -689,6 +755,39 @@ const LANGS = {
     yearlyBalance:'Balance', yearlyTotal:'Total for year:',
     monthNames:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
     surplus:'Surplus', deficit:'Deficit',
+    txWord:'transactions',
+    dashEmpty:'Select or create a budget',
+    dashEmptySub:'Go to «Budgets» section to start',
+    newBudget:'+ New budget',
+    addTxBtn:'+ Add',
+    noTxMsg:'No transactions',
+    newBudgetTitle:'New budget',
+    editBudgetTitle:'Edit budget',
+    modalCancel:'Cancel',
+    modalSaveBudget:'Save budget',
+    txModalCancel:'Cancel',
+    txModalSave:'Save',
+    incomeLabel:'Income',
+    expensesLabel:'Expenses',
+    balanceLabel:'Balance',
+    liveOnline:'Online',
+    liveOffline:'Offline',
+    liveTgConnected:'Telegram connected',
+    liveTgBot:'Telegram bot',
+    dashTitle:'Dashboard',
+    budgetsTitle:'Budgets',
+    transactionsTitle:'Transactions',
+    pdfBtn:'📄 PDF Report',
+    editBtn:'✏️ Edit',
+    catGroceries:'Groceries',
+    catCafe:'Cafe/Restaurant',
+    catTransport:'Transport',
+    catUtilities:'Utilities',
+    catClothing:'Clothing',
+    catPharmacy:'Pharmacy',
+    catEntertainment:'Entertainment',
+    catTech:'Electronics',
+    catOther:'Other',
   }
 };
 
@@ -699,6 +798,9 @@ function i18n(key) {
 }
 
 function applyI18n() {
+  // b-title placeholder
+  const bTitle = document.getElementById('b-title-inp') || document.getElementById('b-title');
+  if(bTitle) bTitle.placeholder = currentLang==='en'?'E.g. June 2025':'Наприклад: Червень 2025';
   // data-i18n elements
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
@@ -719,19 +821,40 @@ function applyI18n() {
   if(lo) lo.textContent = i18n('logout');
   // html lang
   document.documentElement.lang = currentLang;
+  // categories dropdown — rebuild with translated options
+  const catSel = document.getElementById('tx-cat');
+  if(catSel) {
+    const catKeys = ['catGroceries','catCafe','catTransport','catUtilities','catClothing','catPharmacy','catEntertainment','catTech','catOther'];
+    catSel.innerHTML = catKeys.map(k => `<option value="${i18n(k)}">${i18n(k)}</option>`).join('');
+  }
+  // data-i18n-btn buttons (modal add buttons)
+  document.querySelectorAll('[data-i18n-btn]').forEach(el => {
+    const key = el.getAttribute('data-i18n-btn');
+    if(LANGS[currentLang][key]) el.textContent = LANGS[currentLang][key];
+  });
+  // yearly title
+  const yTitle = document.getElementById('yearly-title');
+  if(yTitle) yTitle.textContent = i18n('yearlyTitle');
+  // budget view live buttons
+  const nbBtn = document.getElementById('new-budget-btn');
+  if(nbBtn) nbBtn.textContent = i18n('newBudget');
+  const atBtn = document.getElementById('add-tx-btn');
+  if(atBtn) atBtn.textContent = i18n('addTxBtn');
 }
 
 function setLang(lang) {
   currentLang = lang;
   localStorage.setItem('budgua_lang', lang);
   applyI18n();
-  // Re-render active view
+  // Re-render dynamic views with new language
   if(activeBudgetId) {
     const b = budgets.find(x => x._id === activeBudgetId);
     if(b) renderDashboard(b);
   }
   renderBudgetCards();
   renderTxTable();
+  // Re-render yearly if open
+  if(document.getElementById('view-yearly')?.classList.contains('active')) renderYearlyStats();
 }
 
 // ═══════════════════════════════════════════════
@@ -771,7 +894,8 @@ function toast(msg, type='success') {
 }
 
 function fmt(n) {
-  return Number(n||0).toLocaleString('uk-UA', {minimumFractionDigits:0, maximumFractionDigits:0}) + ' ₴';
+  const locale = currentLang === 'en' ? 'en-US' : 'uk-UA';
+  return Number(n||0).toLocaleString(locale, {minimumFractionDigits:0, maximumFractionDigits:0}) + ' ₴';
 }
 
 function showPage(id) {
@@ -859,9 +983,14 @@ async function enterApp() {
   if(nameDisp) nameDisp.textContent = currentUser?.name || '—';
   if(emailDisp) emailDisp.textContent = currentUser?.email || '—';
   document.getElementById('api-token').textContent = currentUser?.apiToken || '—';
-  // Show Gemini key status
-  const gks = document.getElementById('gemini-key-status');
-  if(gks) gks.textContent = currentUser?.hasGeminiKey ? '✅ ' + (currentLang==='en'?'Custom key active':'Власний ключ активний') : (currentLang==='en'?'Using system key':'Використовується системний ключ');
+  // Show AI key status
+  const gks = document.getElementById('ai-key-status');
+  if(gks) gks.textContent = currentUser?.hasAiKey
+    ? '✅ ' + (currentLang==='en'?'Key active — provider: ':'Ключ активний — провайдер: ') + (currentUser.aiProvider||'gemini')
+    : currentLang==='en'?'⚠️ No key — photo analysis disabled':'⚠️ Ключ не налаштовано — аналіз фото вимкнено';
+  // Set provider dropdown
+  const sel = document.getElementById('ai-provider-select');
+  if(sel && currentUser?.aiProvider) sel.value = currentUser.aiProvider;
   showView('dashboard');
   connectWS();
   await loadBudgets();
@@ -895,15 +1024,15 @@ function renderBudgetCards() {
     return `
     <div class="budget-card" onclick="selectBudget('${b._id}')">
       <div class="bc-actions">
-        <button class="bc-btn" onclick="event.stopPropagation();openBudgetModal('${b._id}')">✏️</button>
+        <button class="bc-btn" id="bc-edit-${b._id}" onclick="event.stopPropagation();openBudgetModal('${b._id}')" title="${i18n('editBtn')}">✏️</button>
         <button class="bc-btn del" onclick="event.stopPropagation();deleteBudget('${b._id}')">🗑</button>
       </div>
       <h3>${b.title}</h3>
       <div class="bc-meta">${b.month || ''}</div>
       <div class="bc-stats">
-        <div class="bc-stat"><span>Дохід</span>${fmt(b.income)}</div>
-        <div class="bc-stat"><span>Витрати</span>${fmt(calc.totalExpenses)}</div>
-        <div class="bc-stat" style="color:${calc.balance>=0?'var(--accent)':'var(--danger)'}"><span>Залишок</span>${fmt(calc.balance)}</div>
+        <div class="bc-stat"><span>${i18n('incomeLabel')}</span>${fmt(b.income)}</div>
+        <div class="bc-stat"><span>${i18n('expensesLabel')}</span>${fmt(calc.totalExpenses)}</div>
+        <div class="bc-stat" style="color:${calc.balance>=0?'var(--accent)':'var(--danger)'}"><span>${i18n('balanceLabel')}</span>${fmt(calc.balance)}</div>
       </div>
     </div>`;
   }).join('');
@@ -1021,11 +1150,11 @@ function renderDashboard(b) {
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
     <div>
       <div style="font-family:'Playfair Display',serif;font-size:1.4rem">${b.title}</div>
-      <div style="font-size:.85rem;color:var(--text2)">${b.month||''} · ${txList.length} транзакцій</div>
+      <div style="font-size:.85rem;color:var(--text2)">${b.month||''} · ${txList.length} ${i18n('txWord')}</div>
     </div>
     <div style="display:flex;gap:10px">
-      <button class="btn btn-ghost btn-sm" onclick="generatePDF('${b._id}')">📄 Звіт PDF</button>
-      <button class="btn btn-ghost btn-sm" onclick="openBudgetModal('${b._id}')">✏️ Редагувати</button>
+      <button class="btn btn-ghost btn-sm" onclick="generatePDF('${b._id}')">${i18n('pdfBtn')}</button>
+      <button class="btn btn-ghost btn-sm" onclick="openBudgetModal('${b._id}')">${i18n('editBtn')}</button>
     </div>
   </div>
 
@@ -1038,17 +1167,17 @@ function renderDashboard(b) {
     <div class="stat-card ${realBalance>=0?'blue':'red'}">
       <div class="stat-label">Реальний залишок</div>
       <div class="stat-value ${realBalance>=0?'blue':'red'}">${fmt(realBalance)}</div>
-      <div class="stat-sub">${realBalance>=0?'✅ В плюсі':'⚠️ Перевитрата'}</div>
+      <div class="stat-sub">${realBalance>=0?i18n('inPlus'):i18n('overspend')}</div>
     </div>
     <div class="stat-card red">
       <div class="stat-label">Витрачено (факт)</div>
       <div class="stat-value red">${fmt(totalActual)}</div>
-      <div class="stat-sub">з ${fmt(c.catTotal)} запланованих</div>
+      <div class="stat-sub">${currentLang==='en'?'of':'з'} ${fmt(c.catTotal)} ${currentLang==='en'?'planned':''}</div>
     </div>
     <div class="stat-card amber">
       <div class="stat-label">Борг / До погашення</div>
       <div class="stat-value amber">${fmt(c.totalDebt)}</div>
-      <div class="stat-sub">${c.payoffMonths > 0 ? '≈' + c.payoffMonths + ' міс.' : 'Немає боргів 🎉'}</div>
+      <div class="stat-sub">${c.payoffMonths > 0 ? '≈' + c.payoffMonths + ' ' + i18n('mo') : i18n('noPayoff')}</div>
     </div>
   </div>
 
@@ -1080,7 +1209,7 @@ function renderDashboard(b) {
     <!-- CHART -->
     <div class="chart-box">
       <h3>Розподіл витрат</h3>
-      ${cats.length && totalActual > 0 ? '<canvas id="cat-chart"></canvas>' : '<div style="color:var(--text2);font-size:.875rem;padding-top:10px">Надішліть фото чеку через Telegram 📱</div>'}
+      ${cats.length && totalActual > 0 ? '<canvas id="cat-chart"></canvas>' : `<div style="color:var(--text2);font-size:.875rem;padding-top:10px">${i18n('noTxHint')}</div>`}
     </div>
   </div>
 
@@ -1089,7 +1218,7 @@ function renderDashboard(b) {
   <div class="card" style="margin-bottom:20px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
       <h3 style="font-size:1rem;font-weight:600;color:var(--text2)">Останні витрати</h3>
-      <button class="btn btn-ghost btn-sm" onclick="showView('transactions')">Всі →</button>
+      <button class="btn btn-ghost btn-sm" onclick="showView('transactions')">${i18n('allTx')}</button>
     </div>
     <div class="table-wrap">
       <table>
@@ -1097,8 +1226,9 @@ function renderDashboard(b) {
         <tbody>
           ${recentTx.map(t => {
             const txDt = new Date(t.date);
-    const d = txDt.toLocaleDateString('uk-UA') + ' ' +
-      txDt.toLocaleTimeString('uk-UA', {hour:'2-digit',minute:'2-digit'});
+    const _txLocale = currentLang === 'en' ? 'en-US' : 'uk-UA';
+    const d = txDt.toLocaleDateString(_txLocale) + ' ' +
+      txDt.toLocaleTimeString(_txLocale, {hour:'2-digit',minute:'2-digit'});
             const src = t.source==='telegram'?'<span class="badge badge-blue">📱 Telegram</span>':'<span class="badge badge-gray">Вручну</span>';
             return `<tr><td>${d}</td><td><span class="badge badge-green">${t.category}</span></td><td>${t.description||'—'}</td><td style="color:var(--danger);font-weight:600">${fmt(t.amount)}</td><td>${src}</td></tr>`;
           }).join('')}
@@ -1138,7 +1268,7 @@ function renderDashboard(b) {
       }).join('')}
     </div>
     <p style="margin-top:12px;font-size:.8rem;color:rgba(255,255,255,.4)">
-      Загальні щомісячні виплати: ${fmt(c.creditMonthly + c.installMonthly + c.ccTotalMonthly)}
+      ${currentLang==='en'?'Total monthly payments: '  :'Загальні щомісячні виплати: '} ${fmt(c.creditMonthly + c.installMonthly + c.ccTotalMonthly)}
     </p>
   </div>` : ''}
   `;
@@ -1227,10 +1357,10 @@ function renderDebtsTable(b, c) {
 
   return `
   <div class="card" style="margin-bottom:20px">
-    <h3 style="font-size:1rem;font-weight:600;margin-bottom:18px;color:var(--text2)" data-i18n="debtsAndCredits">Борги та кредити</h3>
+    <h3 style="font-size:1rem;font-weight:600;margin-bottom:18px;color:var(--text2)">${i18n('debtsAndCredits')}</h3>
     <div class="table-wrap">
       <table>
-        <thead><tr><th data-i18n="name">Назва</th><th data-i18n="type">Тип</th><th data-i18n="debtLeft">Залишок боргу</th><th data-i18n="payment">Платіж/міс</th><th data-i18n="tillPayoff">До погашення</th></tr></thead>
+        <thead><tr><th>${i18n('name')}</th><th>${i18n('type')}</th><th>${i18n('debtLeft')}</th><th>${i18n('payment')}</th><th>${i18n('tillPayoff')}</th></tr></thead>
         <tbody>
           ${debtRowHtml}
           ${ccRows}
@@ -1243,7 +1373,8 @@ function renderDebtsTable(b, c) {
 function approxDate(months) {
   const d = new Date();
   d.setMonth(d.getMonth() + months);
-  return d.toLocaleDateString('uk-UA', { month:'long', year:'numeric' });
+  const locale = currentLang === 'en' ? 'en-US' : 'uk-UA';
+  return d.toLocaleDateString(locale, { month:'long', year:'numeric' });
 }
 
 // ─── OPEN/CLOSE BUDGET MODAL ─────────────────────
@@ -1259,7 +1390,7 @@ function openBudgetModal(id) {
   if(id) {
     const b = budgets.find(x => x._id === id);
     if(b) {
-      document.getElementById('budget-modal-title').textContent = 'Редагувати бюджет';
+      document.getElementById('budget-modal-title').textContent = i18n('editBudgetTitle');
       document.getElementById('b-title').value = b.title || '';
       document.getElementById('b-month').value = b.month || '';
       document.getElementById('b-income').value = b.income || '';
@@ -1273,7 +1404,7 @@ function openBudgetModal(id) {
       renderDynamicList('categories');
     }
   } else {
-    document.getElementById('budget-modal-title').textContent = 'Новий бюджет';
+    document.getElementById('budget-modal-title').textContent = i18n('newBudgetTitle');
     document.getElementById('b-title').value = '';
     document.getElementById('b-month').value = new Date().toISOString().slice(0,7);
     document.getElementById('b-income').value = '';
@@ -1414,14 +1545,14 @@ async function loadTransactions() {
 function renderTxTable() {
   const el = document.getElementById('tx-body');
   if(!transactions.length) {
-    el.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text2);padding:40px">Транзакцій немає</td></tr>';
+    el.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text2);padding:40px">${i18n('noTxMsg')}</td></tr>`;
     return;
   }
   const catColor = { 'Продукти':'green','Кафе/Ресторан':'amber','Транспорт':'blue','Комунальні':'amber','Одяг':'blue','Ліки/Аптека':'red','Розваги':'blue','Техніка':'blue','Інше':'gray' };
   el.innerHTML = transactions.map(t => {
     const d = new Date(t.date).toLocaleDateString('uk-UA');
     const color = catColor[t.category] || 'gray';
-    const src = t.source === 'telegram' ? '<span class="badge badge-blue">Telegram</span>' : '<span class="badge badge-gray">Вручну</span>';
+    const src = t.source === 'telegram' ? '<span class="badge badge-blue">' + i18n('telegramSource') + '</span>' : '<span class="badge badge-gray">' + i18n('manualSource') + '</span>';
     return `<tr>
       <td>${d}</td>
       <td><span class="badge badge-${color}">${t.category}</span></td>
@@ -1504,35 +1635,57 @@ async function regenerateToken() {
 }
 
 // ═══════════════════════════════════════════════
-//  AI KEY MANAGEMENT
+//  AI KEY MANAGEMENT (multi-provider)
 // ═══════════════════════════════════════════════
-function toggleGeminiKeyVisibility() {
-  const inp = document.getElementById('gemini-key-input');
-  const eye = document.getElementById('gemini-eye');
-  if(inp.type === 'password') { inp.type = 'text'; eye.textContent = '🙈'; }
-  else { inp.type = 'password'; eye.textContent = '👁'; }
+function onProviderChange() {
+  const p = document.getElementById('ai-provider-select')?.value;
+  const hints = { gemini:'AIzaSy...', openai:'sk-...', deepseek:'sk-...' };
+  const el = document.getElementById('ai-key-placeholder');
+  if(el && hints[p]) el.textContent = hints[p];
 }
 
-async function saveGeminiKey() {
-  const key = document.getElementById('gemini-key-input').value.trim();
+function toggleAiKeyVisibility() {
+  const inp = document.getElementById('ai-key-input');
+  const eye = document.getElementById('ai-eye');
+  if(!inp) return;
+  inp.type = inp.type==='password' ? 'text' : 'password';
+  eye.textContent = inp.type==='password' ? '👁' : '🙈';
+}
+
+async function saveAiKey() {
+  const key      = document.getElementById('ai-key-input')?.value.trim();
+  const provider = document.getElementById('ai-provider-select')?.value || 'gemini';
   if(!key) return toast(i18n('enterKey'), 'error');
   try {
-    await req('POST', '/auth/api-key', { geminiKey: key });
-    if(currentUser) currentUser.hasGeminiKey = true;
-    document.getElementById('gemini-key-input').value = '';
-    document.getElementById('gemini-key-status').textContent = '✅ ' + (currentLang==='en'?'Key saved!':'Ключ збережено!');
-    toast('✅ Gemini API key ' + (currentLang==='en'?'saved':'збережено'));
+    const data = await req('POST', '/auth/api-key', { aiKey:key, aiProvider:provider });
+    if(currentUser) { currentUser.hasAiKey = true; currentUser.aiProvider = provider; }
+    document.getElementById('ai-key-input').value = '';
+    const status = document.getElementById('ai-key-status');
+    if(status) status.textContent = '✅ ' + (currentLang==='en'?'Key saved! Provider: ':'Ключ збережено! Провайдер: ') + provider;
+    toast('✅ AI key saved');
   } catch(e) { toast(e.message, 'error'); }
 }
 
-async function removeGeminiKey() {
-  if(!confirm(currentLang==='en'?'Remove Gemini API key?':'Видалити ключ Gemini?')) return;
+async function removeAiKey() {
+  if(!confirm(currentLang==='en'?'Remove AI key?':'Видалити AI ключ?')) return;
   try {
     await req('DELETE', '/auth/api-key');
-    if(currentUser) currentUser.hasGeminiKey = false;
-    document.getElementById('gemini-key-status').textContent = currentLang==='en'?'Using system key':'Використовується системний ключ';
+    if(currentUser) currentUser.hasAiKey = false;
+    const status = document.getElementById('ai-key-status');
+    if(status) status.textContent = currentLang==='en'?'No key. Photo analysis disabled.':'Ключ відсутній. Аналіз фото вимкнено.';
     toast(currentLang==='en'?'Key removed':'Ключ видалено');
   } catch(e) { toast(e.message, 'error'); }
+}
+
+// Google Sign-In
+function signInWithGoogle() {
+  const clientId = window.__GOOGLE_CLIENT_ID__ || '';
+  if(!clientId) {
+    toast(currentLang==='en'?'Google Auth not configured on server':'Google Auth не налаштовано', 'error');
+    return;
+  }
+  const redirect = encodeURIComponent(window.location.origin + '/auth/google/callback');
+  window.location.href = 'https://accounts.google.com/o/oauth2/v2/auth?client_id='+clientId+'&redirect_uri='+redirect+'&response_type=code&scope=openid%20email%20profile';
 }
 
 // ═══════════════════════════════════════════════
@@ -1849,7 +2002,7 @@ async function confirmDeleteAccount() {
 async function renderYearlyStats() {
   const el = document.getElementById('yearly-content');
   const title = document.getElementById('yearly-title');
-  if(title) title.textContent = i18n('yearlyTitle');
+  const yearly_t = document.getElementById('yearly-title'); if(yearly_t) yearly_t.textContent = i18n('yearlyTitle');
   if(!el) return;
 
   // Load all transactions
@@ -1905,7 +2058,7 @@ async function renderYearlyStats() {
     </div>
     <div class="stat-card blue">
       <div class="stat-label">${i18n('yearlyTotal')}</div>
-      <div class="stat-value blue">${allTx.filter(t=>new Date(t.date).getFullYear()===year).length} tx</div>
+      <div class="stat-value blue">${allTx.filter(t=>new Date(t.date).getFullYear()===year).length} ${i18n('txWord')}</div>
     </div>
   </div>
 
@@ -2059,14 +2212,14 @@ function setLiveIndicator(online) {
     el.style.background = 'var(--accent)';
     el.style.boxShadow = '0 0 8px var(--accent)';
     lbl.style.color = 'var(--accent)';
-    lbl.textContent = 'Online';
-    if(sub) sub.textContent = 'Telegram підключено';
+    lbl.textContent = i18n('liveOnline');
+    if(sub) sub.textContent = i18n('liveTgConnected');
   } else {
     el.style.background = 'var(--text3)';
     el.style.boxShadow = 'none';
     lbl.style.color = 'var(--text2)';
-    lbl.textContent = 'Offline';
-    if(sub) sub.textContent = 'Telegram бот';
+    lbl.textContent = i18n('liveOffline');
+    if(sub) sub.textContent = i18n('liveTgBot');
   }
 }
 

@@ -42,7 +42,7 @@ router.post('/login', async (req, res) => {
 // Get profile + API token
 router.get('/me', auth, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select('-password');
+    const user = await User.findById(req.user.id).select('-password -aiKey');
     res.json(user);
   } catch (e) {
     res.status(500).json({ error: e.message });
@@ -65,24 +65,42 @@ router.post('/regenerate-token', auth, async (req, res) => {
 });
 
 
-// Save AI API key
+// Save AI provider + key
 router.post('/api-key', auth, async (req, res) => {
   try {
-    const { geminiKey } = req.body;
+    const { aiProvider, aiKey } = req.body;
     const user = await User.findByIdAndUpdate(
       req.user.id,
-      { geminiKey: geminiKey || null },
+      { aiProvider: aiProvider || 'gemini', aiKey: aiKey || null },
       { new: true }
     ).select('-password');
-    res.json({ success: true, hasGeminiKey: !!user.geminiKey });
+    res.json({ success: true, hasAiKey: !!user.aiKey, aiProvider: user.aiProvider });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// Remove AI API key
+// Remove AI key
 router.delete('/api-key', auth, async (req, res) => {
   try {
-    await User.findByIdAndUpdate(req.user.id, { geminiKey: null });
+    await User.findByIdAndUpdate(req.user.id, { aiKey: null });
     res.json({ success: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// Google OAuth
+router.post('/google', async (req, res) => {
+  try {
+    const { googleId, email, name } = req.body;
+    if(!googleId || !email) return res.status(400).json({ error: 'Missing data' });
+    let user = await User.findOne({ $or: [{ googleId }, { email }] });
+    if(!user) {
+      user = await User.create({ googleId, email, name: name||email, password: require('crypto').randomBytes(32).toString('hex') });
+    } else if(!user.googleId) {
+      user.googleId = googleId;
+      await user.save();
+    }
+    const jwt = require('jsonwebtoken');
+    const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn:'30d' });
+    res.json({ token, user: { id: user._id, name: user.name, email: user.email, apiToken: user.apiToken } });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
